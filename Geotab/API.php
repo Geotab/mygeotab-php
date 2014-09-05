@@ -8,6 +8,7 @@ namespace Geotab;
 class API
 {
     private $username, $password, $server, $database;
+    private $credentials = null;
     private $jsonp = false;
 
     public function __construct() {
@@ -15,65 +16,80 @@ class API
     }
 
     public function authenticate() {
-        $response = $this->call("Authenticate", array("database" => $this->database, "userName" => $this->username, "password" => $this->password));
-        //var_dump($response);
+        $result = $this->call("Authenticate", ["database" => $this->database, "userName" => $this->username, "password" => $this->password], function ($result) {
+            $this->credentials = $result["credentials"];
+        }, function ($error) {
+            //Nothing
+        });
     }
 
-    public function call($method, $params = null) {
-        return $this->request($method, $params);
+    public function call($method, $params = null, $successCallback = null, $errorCallback = null) {
+        if ($this->credentials) {
+            $params["credentials"] = $this->credentials;
+        }
+        $result = $this->request($method, $params, $header);
+        $arrayResult = json_decode($result, true);
+        
+
+        if ($arrayResult["result"] == null) {
+            $errorCallback($arrayResult["error"]);
+        } else {
+            $successCallback($arrayResult["result"]);
+        }
+
+        return $header;
     }
 
     public function multiCall() {
 
     }
 
-    private function request($method, array $post = NULL) {
+    private function request($method, array $post = NULL, &$headerReturn = "") {
         $url = "https://" . $this->server . "/apiv1";
+        $postData = "JSON-RPC=" . urlencode(json_encode(["method" => $method, "params" => $post]));
 
-        $json = ["method" => $method, "params" => $post];
-
-        $contentLength = strlen("JSON-RPC=" . urlencode(json_encode($json)));
+        $headers = [
+            "Connection: keep-alive", 
+            "Content-Type: application/x-www-form-urlencoded", 
+            "Charset=UTF-8",
+            "Cache-Control: no-cache",
+            "Pragma: no-cache"
+        ];
 
         $defaults = array( 
             CURLOPT_URL => $url, 
-            CURLOPT_POST => 1,
-            CURLOPT_POSTFIELDS => "JSON-RPC=" . urlencode(json_encode($json)),
-            CURLOPT_HTTPHEADER => ["Connection: keep-alive", "Content-Type: application/x-www-form-urlencoded; charset=UTF-8", "Transfer-Encoding: chunked"],
-            CURLOPT_HEADER => 1,
-            CURLOPT_FRESH_CONNECT => 1,
-            CURLOPT_RETURNTRANSFER => 0,
-            CURLOPT_FORBID_REUSE => 1,
-            CURLOPT_TIMEOUT => 4,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $postData,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_ENCODING => "gzip",
             CURLOPT_SSL_VERIFYPEER => false     //need CA certificates, but this is a hack
         );
 
         $ch = curl_init();
         curl_setopt_array($ch, $defaults); 
+        //curl_setopt($ch, CURLOPT_PROXY, '127.0.0.1:8888');    //fiddler proxy
         
-        if( ! $result = curl_exec($ch)) 
-        { 
-            trigger_error(curl_error($ch)); 
-        } 
-        curl_close($ch); 
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
 
-        return $result;
+        if($error != "") { 
+            trigger_error(curl_error($ch));
+            return $error;
+        } 
+
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headerReturn = substr($response, 0, $header_size);
+        $body = substr($response, $header_size);
+
+        curl_close($ch);
+        return $body;
     }
 
     public function getUsername() {
         return $this->username;
-    }
-
-    public function getPassword() {
-        return $this->password;
-    }
-    
-    public function getServer() {
-        return $this->server;
-    }
-    
-    public function getDatabase() {
-        return $this->database;
     }
 
     public function setUsername($val) {
@@ -81,18 +97,29 @@ class API
         return $this;
     }
 
+    public function getPassword() {
+        return $this->password;
+    }
+    
     public function setPassword($val) {
         $this->password = $val;
         return $this;
     }
     
-    public function setServer($val) {
-        $this->server = is_null($val) || $val == "" ? "my.geotab.com" : $val;
-        return $this;
+    public function getDatabase() {
+        return $this->database;
     }
-    
     public function setDatabase($val) {
         $this->database = $val;
+        return $this;
+    }
+
+    public function getServer() {
+        return $this->server;
+    }
+
+    public function setServer($val) {
+        $this->server = is_null($val) || $val == "" ? "my.geotab.com" : $val;
         return $this;
     }
 }
