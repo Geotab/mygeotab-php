@@ -1,0 +1,29 @@
+{
+    "name": "geotab/mygeotab-php",
+    "type": "library",
+    "description": "Unofficial PHP client for the MyGeotab API",
+    "keywords": ["geotab", "mygeotab", "api", "sdk"],
+    "license": "Apache2",
+    "authors": [
+        {
+            "name": "Mike Murkovic",
+            "email": "mikemurkovic@geotab.com",
+            "homepage": "http://mikemurko.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "require-dev": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Geotab\\": "src/Geotab/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Geotab\\API\\Tests\\": "test/"
+        }
+    }
+}
