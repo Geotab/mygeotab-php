@@ -7,19 +7,43 @@ namespace Geotab;
 */
 class API
 {
-    private $username, $password, $server, $database;
     private $credentials = null;
-    private $jsonp = false;
+    //private $jsonp = false;
 
-    public function __construct() {
+    public function __construct($username, $password = null, $database = null, $sessionId = null, $server = "my.geotab.com") {
+        if ($username == null) {
+            throw new \Exception("Username is required");
+        }
+        if ($password == null && $sessionId == null) {
+            throw new \Exception("You need at least a password or a sessionId");
+        }
+        
+        $this->credentials = new Credentials($username, $password, $database, $sessionId, $server);
 
+        return $this;
     }
 
     public function authenticate() {
-        $result = $this->call("Authenticate", ["database" => $this->database, "userName" => $this->username, "password" => $this->password], function ($result) {
-            $this->credentials = $result["credentials"];
+        $this->call("Authenticate", [
+            "database" => $this->credentials->getDatabase(),
+            "userName" => $this->credentials->getUsername(),
+            "password" => $this->credentials->getPassword()
+        ], function ($result) {
+            $credentials = $result["credentials"];
+
+            $this->credentials->setUsername($credentials["userName"]);
+            $this->credentials->setDatabase($credentials["database"]);
+            $this->credentials->setSessionId($credentials["sessionId"]);
+
+            if ($result["path"] !== "ThisServer") {
+                $this->credentials->setServer($result["path"]);
+            }
+
+            return $this->credentials;
         }, function ($error) {
-            //Nothing
+            if ($error["name"] == "InvalidUserException") {
+                throw new \Exception("Cannot authenticate " . $this->credentials->getUsername() . " on " . $this->credentials->getServer() . "/" . $this->credentials->getDatabase());
+            }
         });
     }
 
@@ -29,12 +53,11 @@ class API
         }
         $result = $this->request($method, $params, $header);
         $arrayResult = json_decode($result, true);
-        
 
-        if ($arrayResult["result"] == null) {
-            $errorCallback($arrayResult["error"]);
+        if ($this->array_check("result", $arrayResult)) {
+            is_callable($successCallback) && $successCallback($arrayResult["result"]);
         } else {
-            $successCallback($arrayResult["result"]);
+            is_callable($errorCallback) && $errorCallback($arrayResult["error"]["errors"][0]);
         }
 
         return $header;
@@ -45,7 +68,7 @@ class API
     }
 
     private function request($method, array $post = NULL, &$headerReturn = "") {
-        $url = "https://" . $this->server . "/apiv1";
+        $url = "https://" . $this->credentials->getServer() . "/apiv1";
         $postData = "JSON-RPC=" . urlencode(json_encode(["method" => $method, "params" => $post]));
 
         $headers = [
@@ -88,38 +111,23 @@ class API
         return $body;
     }
 
-    public function getUsername() {
-        return $this->username;
+    /**
+     * @return Credentials|null
+     */
+    public function getCredentials()
+    {
+        return $this->credentials;
     }
 
-    public function setUsername($val) {
-        $this->username = $val;
-        return $this;
+    /**
+     * @param Credentials|null $credentials
+     */
+    public function setCredentials($credentials)
+    {
+        $this->credentials = $credentials;
     }
 
-    public function getPassword() {
-        return $this->password;
-    }
-    
-    public function setPassword($val) {
-        $this->password = $val;
-        return $this;
-    }
-    
-    public function getDatabase() {
-        return $this->database;
-    }
-    public function setDatabase($val) {
-        $this->database = $val;
-        return $this;
-    }
-
-    public function getServer() {
-        return $this->server;
-    }
-
-    public function setServer($val) {
-        $this->server = is_null($val) || $val == "" ? "my.geotab.com" : $val;
-        return $this;
+    private function array_check($key, $arr) {
+        return (isset($arr[$key]) || array_key_exists($key, $arr));
     }
 }
