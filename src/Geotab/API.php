@@ -49,8 +49,13 @@ class API
 
     public function call($method, $params = null, $successCallback = null, $errorCallback = null) {
         if ($this->credentials) {
-            $params["credentials"] = $this->credentials;
+            $params["credentials"] = [
+                "userName" => $this->credentials->getUsername(),
+                "sessionId" => $this->credentials->getSessionId(),
+                "database" => $this->credentials->getDatabase(),
+            ];
         }
+
         $result = $this->request($method, $params, $header);
         $arrayResult = json_decode($result, true);
 
