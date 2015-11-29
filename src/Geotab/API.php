@@ -20,12 +20,9 @@ class API
      * @param string $server
      * @throws \Exception
      */
-    public function __construct($username, $password = null, $database = null, $sessionId = null, $server = "my.geotab.com") {
+    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com") {
         if ($username == null) {
             throw new \Exception("Username is required");
-        }
-        if ($password == null && $sessionId == null) {
-            throw new \Exception("You need at least a password or a sessionId");
         }
         
         $this->credentials = new Credentials($username, $password, $database, $sessionId, $server);
