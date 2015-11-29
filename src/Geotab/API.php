@@ -56,23 +56,19 @@ class API
             ];
         }
 
-        $result = $this->request($method, $params, $header);
-        $arrayResult = json_decode($result, true);
+        $this->request($method, $params, $successCallback, $errorCallback);
+    }
 
-        if ($this->array_check("result", $arrayResult)) {
-            is_callable($successCallback) && $successCallback($arrayResult["result"]);
-        } else {
-            is_callable($errorCallback) && $errorCallback($arrayResult["error"]["errors"][0]);
+    public function multiCall($calls = [], $successCallback, $errorCallback) {
+        $callParams = [];
+        foreach ($calls as $call) {
+            $callParams[] = ["method" => $call[0], "params" => $call[1]];
         }
 
-        return $header;
+        $this->call("ExecuteMultiCall", ["calls" => $callParams], $successCallback, $errorCallback);
     }
 
-    public function multiCall() {
-
-    }
-
-    private function request($method, array $post = NULL, &$headerReturn = "") {
+    private function request($method, array $post = null, $successCallback = null, $errorCallback = null) {
         $url = "https://" . $this->credentials->getServer() . "/apiv1";
         $postData = "JSON-RPC=" . urlencode(json_encode(["method" => $method, "params" => $post]));
 
@@ -109,11 +105,17 @@ class API
         } 
 
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $headerReturn = substr($response, 0, $header_size);
+        //$headerReturn = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
         curl_close($ch);
-        return $body;
+
+        $result = json_decode($body, true);
+        if ($this->array_check("result", $result)) {
+            is_callable($successCallback) && $successCallback($result["result"]);
+        } else {
+            is_callable($errorCallback) && $errorCallback($result["error"]["errors"][0]);
+        }
     }
 
     /**
