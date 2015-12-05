@@ -8,11 +8,10 @@ class Credentials {
     private $database;
     private $server;
 
-    function __construct($username, $password, $sessionId, $database, $server)
+    function __construct($username, $password, $database, $server)
     {
         $this->username = $username;
         $this->password = $password;
-        $this->sessionId = $sessionId;
         $this->database = $database;
         $this->server = $server;
     }

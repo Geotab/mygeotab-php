@@ -16,7 +16,6 @@ class API
      * @param $username
      * @param null $password
      * @param null $database
-     * @param null $sessionId
      * @param string $server
      * @throws \Exception
      */
@@ -25,7 +24,7 @@ class API
             throw new \Exception("Username is required");
         }
         
-        $this->credentials = new Credentials($username, $password, $database, $sessionId, $server);
+        $this->credentials = new Credentials($username, $password, $database, $server);
 
         return $this;
     }
@@ -66,7 +65,7 @@ class API
      * @param null $errorCallback
      */
     public function call($method, $typeName = null, $params = null, $successCallback = null, $errorCallback = null) {
-        if ($this->credentials) {
+        if ($this->credentials && $method != "Authenticate") {
             $params["credentials"] = [
                 "userName" => $this->credentials->getUsername(),
                 "sessionId" => $this->credentials->getSessionId(),
@@ -87,7 +86,7 @@ class API
      * @param $successCallback
      * @param $errorCallback
      */
-    public function multiCall($calls = [], $successCallback, $errorCallback) {
+    public function multiCall($calls = [], $successCallback = null, $errorCallback = null) {
         $callParams = [];
         foreach ($calls as $call) {
             $callParams[] = ["method" => $call[0], "params" => $call[1]];
@@ -201,6 +200,8 @@ class API
         $result = json_decode($body, true);
         if ($this->array_check("result", $result)) {
             is_callable($successCallback) && $successCallback($result["result"]);
+        } else if (count($result) == 0) {
+            is_callable($successCallback) && $successCallback($result);
         } else {
             is_callable($errorCallback) && $errorCallback($result["error"]["errors"][0]);
         }
