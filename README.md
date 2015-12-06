@@ -1,6 +1,10 @@
 MyGeotab PHP API Client
 ======================
 
+.. image:: https://travis-ci.org/colonelchlorine/mygeotab-php.svg?branch=master
+    :target: https://travis-ci.org/colonelchlorine/mygeotab-php
+    :alt: Build Status
+
 Summary
 ------------
 Provides a PHP client that can easily make API requests to a MyGeotab server. Sample:
