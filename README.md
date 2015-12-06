@@ -1,9 +1,7 @@
 MyGeotab PHP API Client
 ======================
 
-.. image:: https://travis-ci.org/colonelchlorine/mygeotab-php.svg?branch=master
-    :target: https://travis-ci.org/colonelchlorine/mygeotab-php
-    :alt: Build Status
+[![Build Status](https://travis-ci.org/colonelchlorine/mygeotab-php.svg?branch=master)](https://travis-ci.org/colonelchlorine/mygeotab-php)
 
 Summary
 ------------
