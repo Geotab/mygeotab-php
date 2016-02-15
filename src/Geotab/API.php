@@ -59,22 +59,17 @@ class API
     /**
      * Base method for performing an API call
      * @param $method
-     * @param null $typeName
      * @param null $params
      * @param null $successCallback
      * @param null $errorCallback
      */
-    public function call($method, $typeName = null, $params = null, $successCallback = null, $errorCallback = null) {
+    public function call($method, $params = null, $successCallback = null, $errorCallback = null) {
         if ($this->credentials && $method != "Authenticate") {
             $params["credentials"] = [
                 "userName" => $this->credentials->getUsername(),
                 "sessionId" => $this->credentials->getSessionId(),
                 "database" => $this->credentials->getDatabase(),
             ];
-        }
-
-        if ($typeName) {
-            $params["typeName"] = $typeName;
         }
 
         $this->request($method, $params, $successCallback, $errorCallback);
@@ -92,17 +87,18 @@ class API
             $callParams[] = ["method" => $call[0], "params" => $call[1]];
         }
 
-        $this->call("ExecuteMultiCall", null, ["calls" => $callParams], $successCallback, $errorCallback);
+        $this->call("ExecuteMultiCall", ["calls" => $callParams], $successCallback, $errorCallback);
     }
 
     /**
      * Get or search of an entity
-     * @param string $type
+     * @param string $typeName
      * @param array $params
      */
-    public function get($type, $params)
+    public function get($typeName, $params)
     {
-        $this->call("Get", $type, $params);
+        $params["typeName"] = $typeName;
+        $this->call("Get", $params);
     }
 
     /**
@@ -111,7 +107,7 @@ class API
      * @param array $entity
      */
     public function add($type, $entity) {
-        $this->call("Add", $type, ["entity" => $entity]);
+        $this->call("Add", ["typeName" => $type, "entity" => $entity]);
     }
 
     /**
@@ -121,7 +117,7 @@ class API
      */
     public function set($type, $entity)
     {
-        $this->call("Set", $type, ["entity" => $entity]);
+        $this->call("Set", ["typeName" => $type, "entity" => $entity]);
     }
 
     /**
@@ -131,7 +127,7 @@ class API
      */
     public function remove($type, $entity)
     {
-        $this->call("Remove", $type, ["entity" => $entity]);
+        $this->call("Remove", ["typeName" => $type, "entity" => $entity]);
     }
 
     /**
