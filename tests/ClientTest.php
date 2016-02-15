@@ -6,18 +6,24 @@ use Geotab;
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
     public function testCall() {
-        $api = new Geotab\API("xyz", "pwd");
+        $username = getenv('MYGEOTAB_USERNAME');
+        $password = getenv('MYGEOTAB_PASSWORD');
+        $database = getenv('MYGEOTAB_DATABASE');
 
-//        $api->authenticate();
-//
-//        $api->call("Get", ["typeName" => "Device", "search" => ["id" => "b3"]], function ($result) {
-//            var_dump($result);
-//        });
+        if (!$username) {
+            $this->markTestSkipped("Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
+        }
 
-        var_dump($_ENV);
-        var_dump($_SERVER);
+        $api = new Geotab\API($username, $password, $database);
+        $api->authenticate();
 
-        $this->assertEquals("testdb", getenv("MYGEOTAB_DATABASE"));
-        $this->assertEquals(true, true);
+        $api->call("GetVersion", [], function ($result) {
+            $version = explode(".", $result);
+
+            // There should be 4 parts of the version
+            $this->assertEquals(4, count($version));
+        }, function ($error) {
+            $this->fail($error);
+        });
     }
 }

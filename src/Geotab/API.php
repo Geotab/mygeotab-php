@@ -13,10 +13,10 @@ class API
     private $credentials = null;
 
     /**
-     * @param $username
-     * @param null $password
-     * @param null $database
-     * @param string $server
+     * @param string $username Username/email address for MyGeotab server
+     * @param string $password Password for MyGeotab server
+     * @param string $database Database name on MyGeotab
+     * @param string $server Server domain name on the MyGeotab federation (i.e. my.geotab.com)
      * @throws \Exception
      */
     public function __construct($username, $password = null, $database = null, $server = "my.geotab.com") {
