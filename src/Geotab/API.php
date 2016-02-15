@@ -33,7 +33,7 @@ class API
      * Authenticates $this.credentials
      */
     public function authenticate() {
-        $this->call("Authenticate", null, [
+        $this->call("Authenticate", [
             "database" => $this->credentials->getDatabase(),
             "userName" => $this->credentials->getUsername(),
             "password" => $this->credentials->getPassword()
