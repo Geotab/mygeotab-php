@@ -173,7 +173,8 @@ class API
             CURLOPT_HEADER => true,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_ENCODING => "gzip",
-            CURLOPT_SSL_VERIFYPEER => false     //need CA certificates, but this is a hack
+            CURLOPT_SSL_VERIFYPEER => false,     //need CA certificates, but this is a hack
+            CURLOPT_SSL_VERIFYHOST => false
         );
 
         $ch = curl_init();
