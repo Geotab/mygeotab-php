@@ -14,7 +14,10 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 //            var_dump($result);
 //        });
 
-        $this->assertEquals("testdb", $_ENV["MYGEOTAB_DATABASE"]);
+        var_dump($_ENV);
+        var_dump($_SERVER);
+
+        $this->assertEquals("testdb", getenv("MYGEOTAB_DATABASE"));
         $this->assertEquals(true, true);
     }
 }
