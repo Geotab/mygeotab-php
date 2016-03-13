@@ -175,13 +175,12 @@ class API
             CURLOPT_ENCODING => "gzip",
             CURLOPT_SSL_VERIFYPEER => false,     //need CA certificates, but this is a hack
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
+            CURLOPT_SSLVERSION => 6     //CURL_SSLVERSION_TLSv1_2
         );
 
         $ch = curl_init();
         curl_setopt_array($ch, $defaults); 
-        //curl_setopt($ch, CURLOPT_PROXY, '127.0.0.1:8888');    //fiddler proxy
-        
+
         $response = curl_exec($ch);
         $error = curl_error($ch);
 
