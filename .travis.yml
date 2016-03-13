@@ -5,7 +5,6 @@ sudo: false
 php:
   - 5.6
   - 7.0
-  - hhvm
 
 script: 
  - vendor/phpunit/phpunit/phpunit --configuration phpunit.xml.dist
