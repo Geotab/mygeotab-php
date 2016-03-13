@@ -175,7 +175,7 @@ class API
             CURLOPT_ENCODING => "gzip",
             CURLOPT_SSL_VERIFYPEER => false,     //need CA certificates, but this is a hack
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2
         );
 
         $ch = curl_init();
