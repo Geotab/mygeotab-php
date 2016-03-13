@@ -95,10 +95,10 @@ class API
      * @param string $typeName
      * @param array $params
      */
-    public function get($typeName, $params)
+    public function get($typeName, $params, $successCallback, $errorCallback)
     {
         $params["typeName"] = $typeName;
-        $this->call("Get", $params);
+        $this->call("Get", $params, $successCallback, $errorCallback);
     }
 
     /**
@@ -107,7 +107,7 @@ class API
      * @param array $entity
      */
     public function add($type, $entity) {
-        $this->call("Add", ["typeName" => $type, "entity" => $entity]);
+        $this->call("Add", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
     /**
@@ -115,9 +115,9 @@ class API
      * @param string $type
      * @param array $entity
      */
-    public function set($type, $entity)
+    public function set($type, $entity, $successCallback, $errorCallback)
     {
-        $this->call("Set", ["typeName" => $type, "entity" => $entity]);
+        $this->call("Set", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
     /**
@@ -125,9 +125,9 @@ class API
      * @param string $type
      * @param array $entity
      */
-    public function remove($type, $entity)
+    public function remove($type, $entity, $successCallback, $errorCallback)
     {
-        $this->call("Remove", ["typeName" => $type, "entity" => $entity]);
+        $this->call("Remove", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
     /**

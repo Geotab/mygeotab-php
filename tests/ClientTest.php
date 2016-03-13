@@ -6,15 +6,11 @@ use Geotab;
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
     public function testCall() {
-        $username = getenv('MYGEOTAB_USERNAME');
-        $password = getenv('MYGEOTAB_PASSWORD');
-        $database = getenv('MYGEOTAB_DATABASE');
-
-        if (!$username) {
+        if (!MYGEOTAB_USERNAME) {
             $this->markTestSkipped("Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
         }
 
-        $api = new Geotab\API($username, $password, $database);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
         $api->authenticate();
 
         $api->call("GetVersion", [], function ($result) {
