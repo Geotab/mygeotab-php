@@ -12,7 +12,7 @@ Provides a PHP client that can easily make API requests to a MyGeotab server. Sa
 $api = new Geotab\API("user@example.com", "password", "DatabaseName", "my.geotab.com");
 $api->authenticate();
 
-$api->call("Get", "Device", ["resultsLimit" => 1], function ($results) {
+$api->get("Device", ["resultsLimit" => 1], function ($results) {
     var_dump($results);
 }, function ($error) {
     var_dump($error);
