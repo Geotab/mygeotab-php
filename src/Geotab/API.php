@@ -72,7 +72,7 @@ class API
             ];
         }
 
-        $this->request($method, $params, $successCallback, $errorCallback);
+        return $this->request($method, $params, $successCallback, $errorCallback);
     }
 
     /**
@@ -87,7 +87,7 @@ class API
             $callParams[] = ["method" => $call[0], "params" => $call[1]];
         }
 
-        $this->call("ExecuteMultiCall", ["calls" => $callParams], $successCallback, $errorCallback);
+        return $this->call("ExecuteMultiCall", ["calls" => $callParams], $successCallback, $errorCallback);
     }
 
     /**
@@ -95,10 +95,10 @@ class API
      * @param string $typeName
      * @param array $params
      */
-    public function get($typeName, $params, $successCallback, $errorCallback)
+    public function get($typeName, $params, $successCallback = null, $errorCallback = null)
     {
         $params["typeName"] = $typeName;
-        $this->call("Get", $params, $successCallback, $errorCallback);
+        return $this->call("Get", $params, $successCallback, $errorCallback);
     }
 
     /**
@@ -106,8 +106,8 @@ class API
      * @param string $type
      * @param array $entity
      */
-    public function add($type, $entity) {
-        $this->call("Add", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
+    public function add($type, $entity, $successCallback = null, $errorCallback = null) {
+        return $this->call("Add", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
     /**
@@ -115,9 +115,9 @@ class API
      * @param string $type
      * @param array $entity
      */
-    public function set($type, $entity, $successCallback, $errorCallback)
+    public function set($type, $entity, $successCallback = null, $errorCallback = null)
     {
-        $this->call("Set", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
+        return $this->call("Set", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
     /**
@@ -125,9 +125,9 @@ class API
      * @param string $type
      * @param array $entity
      */
-    public function remove($type, $entity, $successCallback, $errorCallback)
+    public function remove($type, $entity, $successCallback = null, $errorCallback = null)
     {
-        $this->call("Remove", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
+        return $this->call("Remove", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
     /**
@@ -152,7 +152,7 @@ class API
      * @param null $successCallback
      * @param null $errorCallback
      */
-    private function request($method, array $post = null, $successCallback = null, $errorCallback = null) {
+    private function request($method, array $post, $successCallback, $errorCallback) {
         $url = "https://" . $this->credentials->getServer() . "/apiv1";
         $postData = "JSON-RPC=" . urlencode(json_encode(["method" => $method, "params" => $post]));
 
@@ -195,12 +195,26 @@ class API
         curl_close($ch);
 
         $result = json_decode($body, true);
+        
+        // If callbacks are specified - then call them. Otherwise, just return the results or throw an error
         if ($this->array_check("result", $result)) {
-            is_callable($successCallback) && $successCallback($result["result"]);
+            if (is_callable($successCallback)) {
+                $successCallback($result["result"]);   
+            } else {
+                return $result["result"];
+            }
         } else if (count($result) == 0) {
-            is_callable($successCallback) && $successCallback($result);
+            if (is_callable($successCallback)) {
+                $successCallback($result);
+            } else {
+                return $result;
+            }
         } else {
-            is_callable($errorCallback) && $errorCallback($result["error"]["errors"][0]);
+            if (is_callable($errorCallback)) {
+                $errorCallback($result["error"]["errors"][0]);
+            } else {
+                throw new MyGeotabException($result["error"]["errors"][0]);
+            }
         }
     }
 
