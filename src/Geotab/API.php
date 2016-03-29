@@ -51,7 +51,7 @@ class API
             return $this->credentials;
         }, function ($error) {
             if ($error["name"] == "InvalidUserException") {
-                throw new \Exception("Cannot authenticate " . $this->credentials->getUsername() . " on " . $this->credentials->getServer() . "/" . $this->credentials->getDatabase());
+                throw new MyGeotabException("Cannot authenticate " . $this->credentials->getUsername() . " on " . $this->credentials->getServer() . "/" . $this->credentials->getDatabase());
             }
         });
     }
