@@ -2,11 +2,14 @@
 namespace Geotab;
 
 class MyGeotabException extends \Exception {
-    public function __construct($message, $code = 0, Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
+    public $error = null;
+
+    public function __construct($error) {
+        $this->error = $error["error"];
+        parent::__construct($this->error["message"]);
     }
 
-    public function __toString() {
-        return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
+    public function __toString() { 
+        return __CLASS__ . ": [{$this->error["data"]["type"]}]: {$this->message}\n";
     }
 }

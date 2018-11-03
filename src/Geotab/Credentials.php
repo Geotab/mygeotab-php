@@ -94,6 +94,5 @@ class Credentials {
     public function setServer($server)
     {
         $this->server = is_null($server) || $server == "" ? "my.geotab.com" : $server;
-        $this->server = $server;
     }
 }

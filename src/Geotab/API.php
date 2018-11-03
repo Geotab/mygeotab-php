@@ -2,6 +2,8 @@
 namespace Geotab;
 
 use GuzzleHttp\Client;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 /**
  * Class API
@@ -33,9 +35,7 @@ class API
         
         $this->credentials = new Credentials($username, $password, $database, $server);
 
-        $this->client = new Client([
-            "base_uri" => $this->resolveUri($server)
-        ]);
+        $this->client = $this->createHttpClient();
 
         return $this;
     }
@@ -54,6 +54,7 @@ class API
             $this->credentials->setUsername($credentials["userName"]);
             $this->credentials->setDatabase($credentials["database"]);
             $this->credentials->setSessionId($credentials["sessionId"]);
+            $this->credentials->setPassword(null);
 
             if ($result["path"] !== "ThisServer") {
                 $this->credentials->setServer($result["path"]);
@@ -61,11 +62,7 @@ class API
 
             return $this->credentials;
         }, function ($error) {
-            if ($error["name"] == "InvalidUserException") {
-                throw new MyGeotabException("Cannot authenticate " . $this->credentials->getUsername() . " on " . $this->credentials->getServer() . "/" . $this->credentials->getDatabase());
-            }
-
-            throw new \Exception($error["message"]);
+            throw new MyGeotabException($error);
         });
     }
 
@@ -163,8 +160,8 @@ class API
      * @param uri The provided uri or server name you're resolving
      * TODO: Improve this to handle if it already has https, etc
      */
-    private function resolveUri($uri) {
-        return "https://" . $uri;
+    private function resolveApiUri($uri) {
+        return "https://${uri}/APIV1";
     }
 
     /**
@@ -174,8 +171,7 @@ class API
      * @param null $errorCallback Function called when response is marked as an error
      */
     private function request($method, array $post, $successCallback, $errorCallback) {
-
-        $response = $this->client->request("POST", "/APIV1", [
+        $response = $this->client->request("POST", $this->resolveApiUri($this->credentials->getServer()), [
             "form_params" => [
                 "JSON-RPC" => json_encode(["method" => $method, "params" => $post])
             ],
@@ -197,7 +193,7 @@ class API
         $isResultReturned = (isset($result["result"]) || array_key_exists("result", $result));
         if ($isResultReturned) {
             if (is_callable($successCallback)) {
-                $successCallback($result["result"]);   
+                $successCallback($result["result"]);
             } else {
                 return $result["result"];
             }
@@ -209,9 +205,9 @@ class API
             }
         } else {
             if (is_callable($errorCallback)) {
-                $errorCallback($result["error"]["errors"][0]);
+                $errorCallback($result);
             } else {
-                throw new MyGeotabException($result["error"]["errors"][0]["message"]);
+                throw new MyGeotabException($result);
             }
         }
     }
@@ -223,5 +219,27 @@ class API
      */
     private function array_check($key, $arr) {
         return (isset($arr[$key]) || array_key_exists($key, $arr));
+    }
+
+    private function createHttpClient($logFilename = "api.log") {
+        // TODO: Improve mygeotab-php and add logging ability
+        if (false) {
+            $stack = \GuzzleHttp\HandlerStack::create();
+            $formattingDefault = [];
+            $logger = (new \Monolog\Logger("mygeotab-php"))->pushHandler(
+                new \Monolog\Handler\RotatingFileHandler($logFilename)
+            );
+            // Example:
+            // [
+            //     '{method} {uri} HTTP/{version} {req_body}',
+            //     'RESPONSE: {code} - {res_body}',
+            // ]
+
+            foreach ($messageFormats as $messageFormat) {
+                $stack->unshift(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter($messageFormat)));
+            }
+        }
+
+        return new Client(isset($stack) ? ['handler' => $stack] : []);
     }
 }
