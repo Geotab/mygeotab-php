@@ -23,7 +23,7 @@ class ClientTest extends TestCase
             // There should be 4 parts of the version
             $this->assertEquals(4, count($version));
         }, function ($error) {
-            $this->fail($error);
+            $this->fail($error["message"]);
         });
 
         // Then try the "synchronous" return method
@@ -62,7 +62,7 @@ class ClientTest extends TestCase
         ], function ($result) {
             $this->assertEquals(1, count($result));
         }, function ($error) {
-            $this->fail($error);
+            $this->fail($error["message"]);
         });
     }
 }

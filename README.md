@@ -15,7 +15,7 @@ You can use [composer](https://getcomposer.org/) and run the following command i
 composer install mygeotab-php
 ```
 
-This repository requires PHP >7.0, but if you're going to try integrate this into older versions
+This repository requires PHP >=7.1, but if you're going to try integrate this into older versions
 then you can look at the code in `src` directly.
 
 Quick start
