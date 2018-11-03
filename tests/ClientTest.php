@@ -2,14 +2,17 @@
 namespace Geotab\Tests;
 
 use Geotab;
+use PHPUnit\Framework\TestCase;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends TestCase
 {
-    public function testCall() {
+    protected function setUp() {
         if (!MYGEOTAB_USERNAME) {
             $this->markTestSkipped("Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
         }
+    }
 
+    public function testCall() {
         $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
         $api->authenticate();
 
@@ -22,7 +25,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         }, function ($error) {
             $this->fail($error);
         });
-        
+
         // Then try the "synchronous" return method
         $result = $api->call("GetVersion", []);
         $version = explode(".", $result);
@@ -35,10 +38,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     Make an authenticate call and make sure it throws a MyGeotabException
     */
     public function testAuthenticationFailure() {
-        if (!MYGEOTAB_USERNAME) {
-            $this->markTestSkipped("Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
-        }
-
         try {
             $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD", MYGEOTAB_DATABASE);
             $api->authenticate();    
@@ -49,10 +48,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     }
     
     public function testDateTimeFormat() {
-        if (!MYGEOTAB_USERNAME) {
-            $this->markTestSkipped("Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
-        }
-        
         $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
         $api->authenticate();
 
