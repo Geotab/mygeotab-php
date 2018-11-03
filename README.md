@@ -4,9 +4,22 @@ MyGeotab PHP API Client
 [![Build Status](https://travis-ci.org/Geotab/mygeotab-php.svg?branch=master)](https://travis-ci.org/Geotab/mygeotab-php)
 [![Packagist](https://img.shields.io/packagist/dm/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
 
-Summary
+Provides a PHP client that can easily make API requests to a MyGeotab server.
+
+
+Installation
 ------------
-Provides a PHP client that can easily make API requests to a MyGeotab server. Sample:
+You can use [composer](https://getcomposer.org/) and run the following command in your repo:
+
+```
+composer install mygeotab-php
+```
+
+This repository requires PHP >7.0, but if you're going to try integrate this into older versions
+then you can look at the code in `src` directly.
+
+Quick start
+------------
 
 ```php
 $api = new Geotab\API("user@example.com", "password", "DatabaseName", "my.geotab.com");
