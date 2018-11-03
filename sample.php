@@ -33,11 +33,6 @@ $api->add("DutyStatusLog", ["entity" => [
     var_dump($results);
 }, $defaultErrorCallback);
 
-echo "Remove DutyStatusLog\n";
-$api->remove("DutyStatusLog", ["id" => $sampleHOSId], function ($results) {
-    var_dump($results);
-}, $defaultErrorCallback);
-
 echo "MultiCall\n";
 $api->multiCall([
     ["Get", ["typeName" => "Device", "resultsLimit" => 1]],
