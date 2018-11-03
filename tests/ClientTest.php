@@ -13,7 +13,7 @@ class ClientTest extends TestCase
     }
 
     public function testCall() {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD);
         $api->authenticate();
 
         // First try closure syntax
@@ -39,7 +39,7 @@ class ClientTest extends TestCase
     */
     public function testAuthenticationFailure() {
         try {
-            $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD", MYGEOTAB_DATABASE);
+            $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD");
             $api->authenticate();    
         }
         catch (Geotab\MyGeotabException $e) {
@@ -48,7 +48,7 @@ class ClientTest extends TestCase
     }
     
     public function testDateTimeFormat() {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD);
         $api->authenticate();
 
         $today = new \DateTime();
