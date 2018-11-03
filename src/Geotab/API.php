@@ -1,6 +1,8 @@
 <?php
 namespace Geotab;
 
+use GuzzleHttp\Client;
+
 /**
  * Class API
  * @package Geotab
@@ -11,6 +13,11 @@ class API
      * @var Credentials|null
      */
     private $credentials = null;
+
+    /**
+     * @var Client|null
+     */
+    private $client = null;
 
     /**
      * @param string $username Username/email address for MyGeotab server
@@ -25,6 +32,10 @@ class API
         }
         
         $this->credentials = new Credentials($username, $password, $database, $server);
+
+        $this->client = new Client([
+            "base_uri" => $this->resolveUri($server)
+        ]);
 
         return $this;
     }
@@ -53,6 +64,8 @@ class API
             if ($error["name"] == "InvalidUserException") {
                 throw new MyGeotabException("Cannot authenticate " . $this->credentials->getUsername() . " on " . $this->credentials->getServer() . "/" . $this->credentials->getDatabase());
             }
+
+            throw new \Exception($error["message"]);
         });
     }
 
@@ -147,57 +160,42 @@ class API
     }
 
     /**
-     * @param $method
-     * @param array $post
-     * @param null $successCallback
-     * @param null $errorCallback
+     * @param uri The provided uri or server name you're resolving
+     * TODO: Improve this to handle if it already has https, etc
+     */
+    private function resolveUri($uri) {
+        return "https://" . $uri;
+    }
+
+    /**
+     * @param $method The method name (e.g. Add, Set, ExecuteMultiCall)
+     * @param array $post The post data object containing searches / entity properties
+     * @param null $successCallback Function called when response is successful
+     * @param null $errorCallback Function called when response is marked as an error
      */
     private function request($method, array $post, $successCallback, $errorCallback) {
-        $url = "https://" . $this->credentials->getServer() . "/apiv1";
-        $postData = "JSON-RPC=" . urlencode(json_encode(["method" => $method, "params" => $post]));
 
-        $headers = [
-            "Connection: keep-alive", 
-            "Content-Type: application/x-www-form-urlencoded", 
-            "Charset=UTF-8",
-            "Cache-Control: no-cache",
-            "Pragma: no-cache"
-        ];
+        $response = $this->client->request("POST", "/APIV1", [
+            "form_params" => [
+                "JSON-RPC" => json_encode(["method" => $method, "params" => $post])
+            ],
+            "headers" => [
+                "User-Agent" => "mygeotab-php/1.0",
+                "Content-Type: application/x-www-form-urlencoded",
+                "Charset=UTF-8",
+                "Cache-Control: no-cache",
+                "Pragma: no-cache"
+            ],
+            "decode_content" => "gzip",
+            "verify" => false,   // Need CA certificates, but this is a hack
+            // 'debug' => fopen('php://stderr', 'w')
+        ]);
 
-        $defaults = array( 
-            CURLOPT_URL => $url, 
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $postData,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_SSL_VERIFYPEER => false,     //need CA certificates, but this is a hack
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_SSLVERSION => 6     //CURL_SSLVERSION_TLSv1_2
-        );
+        $result = json_decode($response->getBody(), true);
 
-        $ch = curl_init();
-        curl_setopt_array($ch, $defaults); 
-
-        $response = curl_exec($ch);
-        $error = curl_error($ch);
-
-        if($error != "") { 
-            trigger_error(curl_error($ch));
-        }
-
-        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        //$headerReturn = substr($response, 0, $header_size);
-        $body = substr($response, $header_size);
-
-        curl_close($ch);
-
-        $result = json_decode($body, true);
-        
         // If callbacks are specified - then call them. Otherwise, just return the results or throw an error
-        if ($this->array_check("result", $result)) {
+        $isResultReturned = (isset($result["result"]) || array_key_exists("result", $result));
+        if ($isResultReturned) {
             if (is_callable($successCallback)) {
                 $successCallback($result["result"]);   
             } else {
@@ -213,7 +211,7 @@ class API
             if (is_callable($errorCallback)) {
                 $errorCallback($result["error"]["errors"][0]);
             } else {
-                throw new MyGeotabException($result["error"]["errors"][0]);
+                throw new MyGeotabException($result["error"]["errors"][0]["message"]);
             }
         }
     }
