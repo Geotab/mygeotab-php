@@ -1,7 +1,8 @@
 <?php
 namespace Geotab;
 
-class Credentials {
+class Credentials
+{
     private $username;
     private $password;
     private $sessionId;

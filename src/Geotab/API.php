@@ -28,22 +28,21 @@ class API
      * @param string $server Server domain name on the MyGeotab federation (i.e. my.geotab.com)
      * @throws \Exception
      */
-    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com") {
+    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com")
+    {
         if ($username == null) {
             throw new \Exception("Username is required");
         }
-        
         $this->credentials = new Credentials($username, $password, $database, $server);
-
         $this->client = $this->createHttpClient();
-
         return $this;
     }
 
     /**
      * Authenticates $this.credentials
      */
-    public function authenticate() {
+    public function authenticate()
+    {
         $this->call("Authenticate", [
             "database" => $this->credentials->getDatabase(),
             "userName" => $this->credentials->getUsername(),
@@ -73,7 +72,8 @@ class API
      * @param null $successCallback
      * @param null $errorCallback
      */
-    public function call($method, $params = null, $successCallback = null, $errorCallback = null) {
+    public function call($method, $params = null, $successCallback = null, $errorCallback = null)
+    {
         if ($this->credentials && $method != "Authenticate") {
             $params["credentials"] = [
                 "userName" => $this->credentials->getUsername(),
@@ -91,7 +91,8 @@ class API
      * @param $successCallback
      * @param $errorCallback
      */
-    public function multiCall($calls = [], $successCallback = null, $errorCallback = null) {
+    public function multiCall($calls = [], $successCallback = null, $errorCallback = null)
+    {
         $callParams = [];
         foreach ($calls as $call) {
             $callParams[] = ["method" => $call[0], "params" => $call[1]];
@@ -116,7 +117,8 @@ class API
      * @param string $type
      * @param array $entity
      */
-    public function add($type, $entity, $successCallback = null, $errorCallback = null) {
+    public function add($type, $entity, $successCallback = null, $errorCallback = null)
+    {
         return $this->call("Add", ["typeName" => $type, "entity" => $entity], $successCallback, $errorCallback);
     }
 
@@ -160,7 +162,8 @@ class API
      * @param uri The provided uri or server name you're resolving
      * TODO: Improve this to handle if it already has https, etc
      */
-    private function resolveApiUri($uri) {
+    private function resolveApiUri($uri)
+    {
         return "https://${uri}/APIV1";
     }
 
@@ -170,7 +173,8 @@ class API
      * @param null $successCallback Function called when response is successful
      * @param null $errorCallback Function called when response is marked as an error
      */
-    private function request($method, array $post, $successCallback, $errorCallback) {
+    private function request($method, array $post, $successCallback, $errorCallback)
+    {
         $response = $this->client->request("POST", $this->resolveApiUri($this->credentials->getServer()), [
             "form_params" => [
                 "JSON-RPC" => json_encode(["method" => $method, "params" => $post])
@@ -217,11 +221,13 @@ class API
      * @param $arr
      * @return bool
      */
-    private function array_check($key, $arr) {
+    private function array_check($key, $arr)
+    {
         return (isset($arr[$key]) || array_key_exists($key, $arr));
     }
 
-    private function createHttpClient($logFilename = "api.log") {
+    private function createHttpClient($logFilename = "api.log")
+    {
         // TODO: Improve mygeotab-php and add logging ability
         if (false) {
             $stack = \GuzzleHttp\HandlerStack::create();
@@ -234,12 +240,10 @@ class API
             //     '{method} {uri} HTTP/{version} {req_body}',
             //     'RESPONSE: {code} - {res_body}',
             // ]
-
             foreach ($messageFormats as $messageFormat) {
                 $stack->unshift(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter($messageFormat)));
             }
         }
-
         return new Client(isset($stack) ? ['handler' => $stack] : []);
     }
 }
