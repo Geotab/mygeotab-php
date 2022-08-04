@@ -21,7 +21,7 @@ class ClientTest extends TestCase
             $version = explode(".", $result);
 
             // There should be 4 parts of the version
-            $this->assertEquals(4, count($version));
+            $this->assertEquals(3, count($version));
         }, function ($error) {
             $this->fail($error["error"]["message"]);
         });
@@ -31,7 +31,7 @@ class ClientTest extends TestCase
         $version = explode(".", $result);
 
         // There should be 4 parts of the version
-        $this->assertEquals(4, count($version));
+        $this->assertEquals(3, count($version));
     }
     
     /*
