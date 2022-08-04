@@ -180,38 +180,32 @@ class API
                 "JSON-RPC" => json_encode(["method" => $method, "params" => $post])
             ],
             "headers" => [
-                "User-Agent" => "mygeotab-php/1.0",
-                "Content-Type: application/x-www-form-urlencoded",
+                "User-Agent" => "mygeotab-php/1.2.0",
+                "Content-Type: application/json",
                 "Charset=UTF-8",
                 "Cache-Control: no-cache",
                 "Pragma: no-cache"
             ],
             "decode_content" => "gzip",
-            "verify" => false,   // Need CA certificates, but this is a hack
+            "verify" => true,   // Need CA certificates, but this is a hack
             // 'debug' => fopen('php://stderr', 'w')
         ]);
 
         $result = json_decode($response->getBody(), true);
 
         // If callbacks are specified - then call them. Otherwise, just return the results or throw an error
-        $isResultReturned = (isset($result["result"]) || array_key_exists("result", $result));
-        if ($isResultReturned) {
-            if (is_callable($successCallback)) {
-                $successCallback($result["result"]);
-            } else {
-                return $result["result"];
-            }
-        } else if (count($result) == 0) {
-            if (is_callable($successCallback)) {
-                $successCallback($result);
-            } else {
-                return $result;
-            }
-        } else {
+        $isError = (isset($result["error"]) || array_key_exists("error", $result));
+        if ($isError) {
             if (is_callable($errorCallback)) {
                 $errorCallback($result);
             } else {
                 throw new MyGeotabException($result);
+            }
+        } else {
+            if (is_callable($successCallback)) {
+                $successCallback($result["result"] ?? null);
+            } else {
+                return $result["result"] ?? null;
             }
         }
     }
