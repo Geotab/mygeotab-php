@@ -12,7 +12,7 @@ Installation
 You can use [composer](https://getcomposer.org/) and run the following command in your repo:
 
 ```
-composer install mygeotab-php
+composer require mygeotab-php
 ```
 
 This repository requires PHP >=7.1, but if you're going to try integrate this into older versions
