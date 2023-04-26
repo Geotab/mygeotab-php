@@ -164,7 +164,7 @@ class API
      */
     private function resolveApiUri($uri)
     {
-        return "https://${uri}/APIV1";
+        return "https://$uri/APIV1";
     }
 
     /**
