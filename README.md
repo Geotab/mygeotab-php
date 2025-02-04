@@ -60,16 +60,8 @@ Examples
 In the `examples` folder, you can see the "Top Speeding Violations" example that was presented in the [Dev Channel video](https://www.geotab.com/video/mygeotab-php-api-client/). The code is not yet hooked up with the Node server and will likely
 have difficulty with PSR, but the code is there and should be easy to understand.
 
-Trick: PHP-CGI NodeJS server
-------------
-If you have a PHP-CGI handler installed, you can run a web server with
-just `server.js` in NodeJS. I found this quick and easy on Windows instead of setting up a complex web server.
-
-First, find the php-cgi executable on your machine (e.g. C:\Program Files\PHP\v7.2\php-cgi.exe) and place that in the file. Then run:
+You can use the built-in web server to test out the example at `http://localhost:7000:
 
 ```
-npm install
-node server.js
+php -S localhost:7000 -t examples/top-speeding-violations/web
 ```
-
-Should now visit localhost:8080/sample.php and voila - you're serving PHP from a NodeJS server!

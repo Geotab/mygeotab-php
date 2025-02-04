@@ -33,10 +33,10 @@ if (isset($_POST['submit'])) {
     <article>
         <div id="authenticate">
             <form action="<?=$_SERVER['PHP_SELF']?>" method="post">
-                <input type="text" placeholder="Username" name="username" value="phpuser" />
+                <input type="text" placeholder="Username" name="username" />
                 <input type="password" placeholder="Password" name="password" />
-                <input type="text" placeholder="Database" name="database" value="G560" />
-                <input type="text" placeholder="Server" name="server" value="my3.geotab.com" />
+                <input type="text" placeholder="Database" name="database" />
+                <input type="text" placeholder="Server" name="server" value="my.geotab.com" />
                 <input type="submit" name="submit" value="Connect" />
             </form>
         </div>
