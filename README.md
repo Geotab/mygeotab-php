@@ -1,7 +1,6 @@
 MyGeotab PHP API Client
 ======================
 
-[![Build Status](https://travis-ci.org/Geotab/mygeotab-php.svg?branch=master)](https://travis-ci.org/Geotab/mygeotab-php)
 [![Packagist](https://img.shields.io/packagist/dm/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
 
 Provides a PHP client that can easily make API requests to a MyGeotab server.
