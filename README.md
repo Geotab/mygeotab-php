@@ -8,10 +8,10 @@ Provides a PHP client that can easily make API requests to a MyGeotab server.
 
 Installation
 ------------
-You can use [composer](https://getcomposer.org/) and run the following command in your repo:
+You can use [composer](https://getcomposer.org/) and run the following command into your own repo:
 
 ```
-composer require mygeotab-php
+composer require geotab/mygeotab-php
 ```
 
 This repository requires PHP >=7.1, but if you're going to try integrate this into older versions
@@ -54,12 +54,19 @@ try {
 echo "The driver has " . count($violations) . " violations!";
 ```
 
+Contributing
+------------
+To build this repo, you should start by running:
+
+```
+composer update
+```
+
+Feel free to clone and open a new Pull Request with any suggested changes.
+
 Examples
 ------------
-In the `examples` folder, you can see the "Top Speeding Violations" example that was presented in the [Dev Channel video](https://www.geotab.com/video/mygeotab-php-api-client/). The code is not yet hooked up with the Node server and will likely
-have difficulty with PSR, but the code is there and should be easy to understand.
-
-You can use the built-in web server to test out the example at `http://localhost:7000:
+In the `examples` folder, you can see the "Top Speeding Violations" example that was presented in the [Dev Channel video](https://www.geotab.com/video/mygeotab-php-api-client/). You can use the PHP built-in web server to test out the example at `http://localhost:7000` by running:
 
 ```
 php -S localhost:7000 -t examples/top-speeding-violations/web
