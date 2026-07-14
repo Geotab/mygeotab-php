@@ -32,8 +32,11 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Run tests
-        run: vendor/bin/phpunit --configuration phpunit.xml.dist
+      - name: Run unit tests
+        run: vendor/bin/phpunit --testsuite unit --configuration phpunit.xml.dist
+
+      - name: Run integration tests
+        run: vendor/bin/phpunit --testsuite integration --configuration phpunit.xml.dist
         env:
           MYGEOTAB_USERNAME: ${{ secrets.MYGEOTAB_USERNAME }}
           MYGEOTAB_PASSWORD: ${{ secrets.MYGEOTAB_PASSWORD }}

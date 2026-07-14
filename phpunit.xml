@@ -10,8 +10,11 @@
     displayDetailsOnPhpunitDeprecations="true"
     bootstrap="./tests/bootstrap.php">
   <testsuites>
-    <testsuite name="mygeotab-php Test Suite">
-      <directory>./tests</directory>
+    <testsuite name="unit">
+      <file>./tests/ApiTest.php</file>
+    </testsuite>
+    <testsuite name="integration">
+      <file>./tests/ClientTest.php</file>
     </testsuite>
   </testsuites>
 </phpunit>

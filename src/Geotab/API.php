@@ -26,13 +26,13 @@ class API
      * @param string $server Server domain name on the MyGeotab federation (i.e. my.geotab.com)
      * @throws \Exception
      */
-    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com")
+    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com", ?Client $client = null)
     {
         if ($username == null) {
             throw new \Exception("Username is required");
         }
         $this->credentials = new Credentials($username, $password, $database, $server);
-        $this->client = $this->createHttpClient();
+        $this->client = $client ?? $this->createHttpClient();
     }
 
     /**
