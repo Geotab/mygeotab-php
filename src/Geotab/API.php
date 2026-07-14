@@ -184,8 +184,7 @@ class API
                 "Pragma: no-cache"
             ],
             "decode_content" => "gzip",
-            "verify" => true,   // Need CA certificates, but this is a hack
-            // 'debug' => fopen('php://stderr', 'w')
+            "verify" => true,
         ]);
 
         $result = json_decode($response->getBody(), true);
