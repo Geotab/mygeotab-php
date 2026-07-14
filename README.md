@@ -1,21 +1,26 @@
 MyGeotab PHP API Client
 ======================
 
+[![CI](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml/badge.svg)](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml)
 [![Packagist](https://img.shields.io/packagist/dm/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
 
 Provides a PHP client that can easily make API requests to a MyGeotab server.
 
+This package is maintained by Geotab. For issues or questions, please open a GitHub issue.
+
+Requirements
+------------
+
+- PHP **>=8.1**
+- [Composer](https://getcomposer.org/)
 
 Installation
 ------------
-You can use [composer](https://getcomposer.org/) and run the following command into your own repo:
+Install via [Composer](https://getcomposer.org/):
 
 ```
 composer require geotab/mygeotab-php
 ```
-
-This repository requires PHP >=7.1, but if you're going to try integrate this into older versions
-then you can look at the code in `src` directly.
 
 Quick start
 ------------
@@ -31,7 +36,7 @@ $api->get("Device", ["resultsLimit" => 1], function ($results) {
 });
 ```
 
-Instead of using the callback syntax, you can simply use the return result directly. Keep in mind, if an error occurs you won't be informed! It will throw as a `MyGeotabException`, so remember to use try & catch.
+Instead of using the callback syntax, you can simply use the return result directly. Keep in mind, if an error occurs it will throw as a `MyGeotabException`, so remember to use try & catch.
 
 ```php
 $toDate = new DateTime();
@@ -56,17 +61,26 @@ echo "The driver has " . count($violations) . " violations!";
 
 Contributing
 ------------
-To build this repo, you should start by running:
+Clone the repo and install dependencies using the lockfile for a reproducible environment:
 
 ```
-composer update
+composer install
 ```
 
-Feel free to clone and open a new Pull Request with any suggested changes.
+Run the test suite. Integration tests require MyGeotab credentials supplied as environment variables; without them the tests are skipped automatically:
+
+```
+MYGEOTAB_USERNAME=user@example.com \
+MYGEOTAB_PASSWORD=password \
+MYGEOTAB_DATABASE=DatabaseName \
+vendor/bin/phpunit --configuration phpunit.xml.dist
+```
+
+Feel free to open a Pull Request with any suggested changes.
 
 Examples
 ------------
-In the `examples` folder, you can see the "Top Speeding Violations" example that was presented in the [Dev Channel video](https://www.geotab.com/video/mygeotab-php-api-client/). You can use the PHP built-in web server to test out the example at `http://localhost:7000` by running:
+In the `examples` folder, you can see the "Top Speeding Violations" example. You can use the PHP built-in web server to test out the example at `http://localhost:7000` by running:
 
 ```
 php -S localhost:7000 -t examples/top-speeding-violations/web

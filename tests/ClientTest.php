@@ -9,7 +9,7 @@ class ClientTest extends TestCase
     protected function setUp(): void
     {
         if (!MYGEOTAB_USERNAME) {
-            $this->assertFalse(true, "Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
+            $this->markTestSkipped('Set MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, and MYGEOTAB_DATABASE environment variables to run integration tests.');
         }
     }
 

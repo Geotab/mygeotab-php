@@ -2,8 +2,6 @@
 namespace Geotab;
 
 use GuzzleHttp\Client;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 
 /**
  * Class API
@@ -35,7 +33,6 @@ class API
         }
         $this->credentials = new Credentials($username, $password, $database, $server);
         $this->client = $this->createHttpClient();
-        return $this;
     }
 
     /**
@@ -210,34 +207,8 @@ class API
         }
     }
 
-    /**
-     * @param $key
-     * @param $arr
-     * @return bool
-     */
-    private function array_check($key, $arr)
+    private function createHttpClient(): Client
     {
-        return (isset($arr[$key]) || array_key_exists($key, $arr));
-    }
-
-    private function createHttpClient($logFilename = "api.log")
-    {
-        // TODO: Improve mygeotab-php and add logging ability
-        if (false) {
-            $stack = \GuzzleHttp\HandlerStack::create();
-            $formattingDefault = [];
-            $logger = (new \Monolog\Logger("mygeotab-php"))->pushHandler(
-                new \Monolog\Handler\RotatingFileHandler($logFilename)
-            );
-            // Example:
-            // [
-            //     '{method} {uri} HTTP/{version} {req_body}',
-            //     'RESPONSE: {code} - {res_body}',
-            // ]
-            foreach ($messageFormats as $messageFormat) {
-                $stack->unshift(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter($messageFormat)));
-            }
-        }
-        return new Client(isset($stack) ? ['handler' => $stack] : []);
+        return new Client();
     }
 }
