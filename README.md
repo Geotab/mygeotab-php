@@ -1,6 +1,6 @@
 # MyGeotab PHP API Client
 
-[![CI](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml/badge.svg)](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/Geotab/mygeotab-php/ci.yml?branch=main&label=CI)](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml)
 [![Latest Version](https://img.shields.io/packagist/v/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
 [![Monthly Downloads](https://img.shields.io/packagist/dm/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
