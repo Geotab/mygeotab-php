@@ -1,100 +1,143 @@
-MyGeotab PHP API Client
-======================
+# MyGeotab PHP API Client
 
 [![CI](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml/badge.svg)](https://github.com/Geotab/mygeotab-php/actions/workflows/ci.yml)
-[![Packagist](https://img.shields.io/packagist/dm/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
+[![Latest Version](https://img.shields.io/packagist/v/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
+[![Monthly Downloads](https://img.shields.io/packagist/dm/geotab/mygeotab-php.svg)](https://packagist.org/packages/geotab/mygeotab-php)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Provides a PHP client that can easily make API requests to a MyGeotab server.
+PHP client for the [MyGeotab](https://www.geotab.com) API.
 
-This package is maintained by Geotab. For issues or questions, please open a GitHub issue.
-
-Requirements
-------------
+## Requirements
 
 - PHP **>=8.1**
 - [Composer](https://getcomposer.org/)
 
-Installation
-------------
-Install via [Composer](https://getcomposer.org/):
+## Installation
 
-```
+```bash
 composer require geotab/mygeotab-php
 ```
 
-Quick start
-------------
+## Quick Start
 
 ```php
-$api = new Geotab\API("user@example.com", "password", "DatabaseName", "my.geotab.com");
+// Store credentials in environment variables, not in source code
+$api = new Geotab\API(
+    getenv('MYGEOTAB_USERNAME'),
+    getenv('MYGEOTAB_PASSWORD'),
+    getenv('MYGEOTAB_DATABASE')
+);
 $api->authenticate();
 
-$api->get("Device", ["resultsLimit" => 1], function ($results) {
-    var_dump($results);
-}, function ($error) {
-    var_dump($error);
-});
+$results = $api->get("Device", ["resultsLimit" => 1]);
 ```
 
-Instead of using the callback syntax, you can simply use the return result directly. Keep in mind, if an error occurs it will throw as a `MyGeotabException`, so remember to use try & catch.
+**Constructor:** `new Geotab\API($username, $password, $database, $server = "my.geotab.com")`
+
+The `$server` parameter defaults to `my.geotab.com`. After `authenticate()`, it is updated automatically if the account lives on a different server node.
+
+### Error handling
+
+Methods return results directly and throw `Geotab\MyGeotabException` on error:
 
 ```php
-$toDate = new DateTime();
-$fromDate = new DateTime();
-$fromDate->modify("-1 month");
+use Geotab\MyGeotabException;
 
 try {
+    $toDate   = new DateTime();
+    $fromDate = new DateTime();
+    $fromDate->modify("-1 month");
+
     $violations = $api->get("DutyStatusViolation", [
         "search" => [
             "userSearch" => ["id" => "b1"],
-            "toDate" => $toDate->format("c"),   // ISO8601, or could use "2018-11-03 00:53:29.370134"
-            "fromDate" => $fromDate->format("c")
+            "toDate"     => $toDate->format("c"),
+            "fromDate"   => $fromDate->format("c"),
         ],
-        "resultsLimit" => 10
+        "resultsLimit" => 10,
     ]);
-} catch (Exception $e) {
-    // Handle this or return
+
+    echo "The driver has " . count($violations) . " violations!";
+} catch (MyGeotabException $e) {
+    // Handle API error
 }
-
-echo "The driver has " . count($violations) . " violations!";
 ```
 
-Contributing
-------------
-Clone the repo and install dependencies using the lockfile for a reproducible environment:
+All methods also accept optional success and error callbacks if you prefer that style:
 
-```
-composer install
-```
-
-Run the test suite. Integration tests require MyGeotab credentials supplied as environment variables; without them the tests are skipped automatically:
-
-```
-MYGEOTAB_USERNAME=user@example.com \
-MYGEOTAB_PASSWORD=password \
-MYGEOTAB_DATABASE=DatabaseName \
-vendor/bin/phpunit --configuration phpunit.xml.dist
+```php
+$api->get(
+    "Device",
+    ["resultsLimit" => 1],
+    function ($results) { var_dump($results); },
+    function ($error)   { var_dump($error); }
+);
 ```
 
-Feel free to open a Pull Request with any suggested changes.
+## API Reference
 
-Examples
-------------
-The `examples/` folder contains two runnable samples:
+| Method | Description |
+|--------|-------------|
+| `authenticate()` | Exchanges credentials for a session token. Updates `$server` automatically if the account is on a different node. |
+| `get($type, $params)` | Retrieves or searches for entities. |
+| `add($type, $entity)` | Creates a new entity. |
+| `set($type, $entity)` | Updates an existing entity. |
+| `remove($type, $entity)` | Deletes an entity. |
+| `call($method, $params)` | Calls any MyGeotab API method by name. |
+| `multiCall($calls)` | Executes multiple API calls in a single HTTP request. |
+| `getCredentials()` | Returns the current `Geotab\Credentials` object. |
+| `setCredentials($credentials)` | Replaces the current credentials. |
+
+See the [Geotab SDK documentation](https://developers.geotab.com) for available entity types, methods, and search parameters.
+
+## Examples
+
+The `examples/` directory contains two runnable samples.
 
 **CLI sample** — exercises Get, Set, Add, and MultiCall against a live database:
 
-```
+```bash
 MYGEOTAB_USERNAME=user@example.com \
 MYGEOTAB_PASSWORD=password \
 MYGEOTAB_DATABASE=DatabaseName \
 php examples/cli-sample.php
 ```
 
-**Top Speeding Violations** — a web UI example. Serve it with PHP's built-in web server:
+**Top Speeding Violations** — a web UI example. Serve with PHP's built-in server:
 
-```
+```bash
 php -S localhost:7000 -t examples/top-speeding-violations/web
 ```
 
 Then open `http://localhost:7000` in your browser.
+
+## Contributing
+
+Clone the repo and install dependencies:
+
+```bash
+git clone https://github.com/Geotab/mygeotab-php.git
+cd mygeotab-php
+composer install
+```
+
+Run the test suite:
+
+```bash
+vendor/bin/phpunit
+```
+
+Integration tests require credentials supplied as environment variables; they are skipped automatically if not set:
+
+```bash
+MYGEOTAB_USERNAME=user@example.com \
+MYGEOTAB_PASSWORD=password \
+MYGEOTAB_DATABASE=DatabaseName \
+vendor/bin/phpunit
+```
+
+Pull requests are welcome. For major changes, open an issue first to discuss what you'd like to change.
+
+## License
+
+MIT © Geotab. See [LICENSE](LICENSE) for details.
