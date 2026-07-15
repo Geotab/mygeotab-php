@@ -25,7 +25,8 @@ class ApiTest extends TestCase
 
     private function mockSuccess(mixed $result): Response
     {
-        return new Response(200, ['Content-Type' => 'application/json'], json_encode(['result' => $result]));
+        return new Response(200, ['Content-Type' => 'application/json'],
+            json_encode(['result' => $result, 'jsonrpc' => '2.0']));
     }
 
     private function mockError(string $type, string $message): Response
@@ -36,6 +37,7 @@ class ApiTest extends TestCase
                 'data'    => ['id' => null, 'type' => $type, 'requestIndex' => 0],
                 'message' => $message,
             ],
+            'jsonrpc' => '2.0',
         ]));
     }
 
@@ -65,9 +67,9 @@ class ApiTest extends TestCase
 
     public function testConstructorAcceptsInjectedClient(): void
     {
-        $client = $this->makeClient([$this->mockSuccess('8.0.0.1')]);
+        $client = $this->makeClient([$this->mockSuccess('11.133.449')]);
         $api    = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com', $client);
-        $this->assertSame('8.0.0.1', $api->call('GetVersion', []));
+        $this->assertSame('11.133.449', $api->call('GetVersion', []));
     }
 
     // -------------------------------------------------------------------------
@@ -130,22 +132,22 @@ class ApiTest extends TestCase
     public function testCallReturnsResultDirectly(): void
     {
         $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
-            $this->makeClient([$this->authResponse(), $this->mockSuccess('8.0.0.1')]));
+            $this->makeClient([$this->authResponse(), $this->mockSuccess('11.133.449')]));
         $api->authenticate();
 
-        $this->assertSame('8.0.0.1', $api->call('GetVersion', []));
+        $this->assertSame('11.133.449', $api->call('GetVersion', []));
     }
 
     public function testCallInvokesSuccessCallback(): void
     {
         $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
-            $this->makeClient([$this->authResponse(), $this->mockSuccess('8.0.0.1')]));
+            $this->makeClient([$this->authResponse(), $this->mockSuccess('11.133.449')]));
         $api->authenticate();
 
         $called = false;
         $api->call('GetVersion', [], function ($result) use (&$called) {
             $called = true;
-            $this->assertSame('8.0.0.1', $result);
+            $this->assertSame('11.133.449', $result);
         });
         $this->assertTrue($called, 'Success callback was never invoked');
     }
@@ -338,7 +340,7 @@ class ApiTest extends TestCase
     public function testMultiCall(): void
     {
         $multiResult = [
-            '8.0.0.1',
+            '11.133.449',
             [['id' => 'b1', 'name' => 'Fleet Truck 01', 'deviceType' => 'GO9']],
         ];
 
@@ -352,7 +354,7 @@ class ApiTest extends TestCase
         ]);
 
         $this->assertCount(2, $results);
-        $this->assertSame('8.0.0.1', $results[0]);
+        $this->assertSame('11.133.449', $results[0]);
         $this->assertSame('b1', $results[1][0]['id']);
         $this->assertSame('GO9', $results[1][0]['deviceType']);
     }

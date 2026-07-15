@@ -22,7 +22,7 @@ class ClientTest extends TestCase
         $api->call("GetVersion", [], function ($result) {
             $version = explode(".", $result);
 
-            // There should be 4 parts of the version
+            // Version string has 3 parts, e.g. "11.133.449"
             $this->assertEquals(3, count($version));
         }, function ($error) {
             $this->fail($error["error"]["message"]);
@@ -32,7 +32,7 @@ class ClientTest extends TestCase
         $result = $api->call("GetVersion", []);
         $version = explode(".", $result);
 
-        // There should be 4 parts of the version
+        // Version string has 3 parts, e.g. "11.133.449"
         $this->assertEquals(3, count($version));
     }
     
