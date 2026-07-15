@@ -80,8 +80,21 @@ Feel free to open a Pull Request with any suggested changes.
 
 Examples
 ------------
-In the `examples` folder, you can see the "Top Speeding Violations" example. You can use the PHP built-in web server to test out the example at `http://localhost:7000` by running:
+The `examples/` folder contains two runnable samples:
+
+**CLI sample** — exercises Get, Set, Add, and MultiCall against a live database:
+
+```
+MYGEOTAB_USERNAME=user@example.com \
+MYGEOTAB_PASSWORD=password \
+MYGEOTAB_DATABASE=DatabaseName \
+php examples/cli-sample.php
+```
+
+**Top Speeding Violations** — a web UI example. Serve it with PHP's built-in web server:
 
 ```
 php -S localhost:7000 -t examples/top-speeding-violations/web
 ```
+
+Then open `http://localhost:7000` in your browser.
