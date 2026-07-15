@@ -74,6 +74,38 @@ $api->get(
 );
 ```
 
+## Logging
+
+The library does not log internally. To log HTTP requests and responses, pass a pre-configured Guzzle client with a [log middleware](https://docs.guzzlephp.org/en/stable/handlers-and-middleware.html) attached. This works with any [PSR-3](https://www.php-fig.org/psr/psr-3/) compatible logger such as [Monolog](https://github.com/Seldaek/monolog):
+
+```bash
+composer require monolog/monolog
+```
+
+```php
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\MessageFormatter;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$logger = new Logger('mygeotab');
+$logger->pushHandler(new StreamHandler('mygeotab.log'));
+
+$stack = HandlerStack::create();
+$stack->push(Middleware::log($logger, new MessageFormatter('{method} {uri} → {code}')));
+
+$api = new Geotab\API(
+    getenv('MYGEOTAB_USERNAME'),
+    getenv('MYGEOTAB_PASSWORD'),
+    getenv('MYGEOTAB_DATABASE'),
+    'my.geotab.com',
+    new Client(['handler' => $stack])
+);
+$api->authenticate();
+```
+
 ## API Reference
 
 | Method | Description |
