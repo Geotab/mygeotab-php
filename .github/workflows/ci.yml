@@ -39,6 +39,7 @@ jobs:
           echo "MYGEOTAB_USERNAME set: ${{ secrets.MYGEOTAB_USERNAME != '' }}"
           echo "MYGEOTAB_PASSWORD set: ${{ secrets.MYGEOTAB_PASSWORD != '' }}"
           echo "MYGEOTAB_DATABASE set: ${{ secrets.MYGEOTAB_DATABASE != '' }}"
+          echo "MYGEOTAB_SERVER set: ${{ secrets.MYGEOTAB_SERVER != '' }}"
 
       - name: Run integration tests
         run: vendor/bin/phpunit --testsuite integration --configuration phpunit.xml.dist
@@ -46,3 +47,4 @@ jobs:
           MYGEOTAB_USERNAME: ${{ secrets.MYGEOTAB_USERNAME }}
           MYGEOTAB_PASSWORD: ${{ secrets.MYGEOTAB_PASSWORD }}
           MYGEOTAB_DATABASE: ${{ secrets.MYGEOTAB_DATABASE }}
+          MYGEOTAB_SERVER: ${{ secrets.MYGEOTAB_SERVER }}

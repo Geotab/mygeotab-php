@@ -9,13 +9,13 @@ class ClientTest extends TestCase
     protected function setUp(): void
     {
         if (!MYGEOTAB_USERNAME) {
-            $this->markTestSkipped('Set MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, and MYGEOTAB_DATABASE environment variables to run integration tests.');
+            $this->markTestSkipped('Set MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, and optionally MYGEOTAB_SERVER environment variables to run integration tests.');
         }
     }
 
     public function testCall()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
         $api->authenticate();
 
         // First try closure syntax
@@ -55,7 +55,7 @@ class ClientTest extends TestCase
     {
         $today = new \DateTime();
 
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
         $api->authenticate();
 
         // Get a single device that is active today
@@ -73,7 +73,7 @@ class ClientTest extends TestCase
 
     public function testSuccessfulCallWithoutAResultOrError()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
         $api->authenticate();
 
         // Get a single device & try to set it equal to it's downloaded result. Expect a successful result
@@ -101,7 +101,7 @@ class ClientTest extends TestCase
 
     public function testErrorCall()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
+        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
         $api->authenticate();
 
         // Get a single device that is active today
