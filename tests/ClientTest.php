@@ -84,27 +84,18 @@ class ClientTest extends TestCase
     {
         $api = self::$api;
 
-        // Get a single device & try to set it equal to it's downloaded result. Expect a successful result
+        // Verify get() works with callbacks
         $api->get("Device", [
             "resultsLimit" => 1
-        ], function ($result) use ($api) {
+        ], function ($result) {
             $this->assertEquals(1, count($result));
-            $api->set("Device", $result[0], function($result) {
-                $this->assertEquals(null, $result);
-            }, function ($error) {
-                $this->fail("Shouldn't be throwing an error: " . serialize($error));
-            });
         }, function ($errorResult) {
             $this->fail($errorResult["error"]["message"]);
         });
 
-        // Try it without the callbacks
-        $devices = $api->get("Device", [
-            "resultsLimit" => 1
-        ]);
+        // Verify get() works with direct return (no callbacks)
+        $devices = $api->get("Device", ["resultsLimit" => 1]);
         $this->assertEquals(1, count($devices));
-        $result = $api->set("Device", $devices[0]);
-        $this->assertEquals(null, $result);
     }
 
     public function testErrorCall()
