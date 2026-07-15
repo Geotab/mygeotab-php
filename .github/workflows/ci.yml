@@ -10,6 +10,7 @@ jobs:
   test:
     name: PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
+    environment: PHP
 
     strategy:
       fail-fast: false
