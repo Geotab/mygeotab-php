@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
@@ -33,13 +33,6 @@ jobs:
 
       - name: Run unit tests
         run: vendor/bin/phpunit --testsuite unit --configuration phpunit.xml.dist
-
-      - name: Check integration secrets
-        run: |
-          echo "MYGEOTAB_USERNAME set: ${{ secrets.MYGEOTAB_USERNAME != '' }}"
-          echo "MYGEOTAB_PASSWORD set: ${{ secrets.MYGEOTAB_PASSWORD != '' }}"
-          echo "MYGEOTAB_DATABASE set: ${{ secrets.MYGEOTAB_DATABASE != '' }}"
-          echo "MYGEOTAB_SERVER set: ${{ secrets.MYGEOTAB_SERVER != '' }}"
 
       - name: Run integration tests
         run: vendor/bin/phpunit --testsuite integration --configuration phpunit.xml.dist
