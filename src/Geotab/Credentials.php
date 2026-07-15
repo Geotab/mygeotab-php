@@ -9,7 +9,7 @@ class Credentials
     private $database;
     private $server;
 
-    function __construct($username, $password, $database, $server)
+    public function __construct($username, $password, $database, $server)
     {
         $this->username = $username;
         $this->password = $password;

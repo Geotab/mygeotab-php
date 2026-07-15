@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 $sampleUserId = "b41B4DC05";
 $sampleHOSId = "aDVrUIaQ1ZUWmoTIDd--AJb";
@@ -7,7 +7,7 @@ $defaultErrorCallback = function ($error) {
     var_dump($error);
 };
 
-$api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, "my.geotab.com");
+$api = new Geotab\API(getenv('MYGEOTAB_USERNAME'), getenv('MYGEOTAB_PASSWORD'), getenv('MYGEOTAB_DATABASE'), "my.geotab.com");
 $api->authenticate();
 
 echo "Get User\n";

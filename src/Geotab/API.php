@@ -2,8 +2,6 @@
 namespace Geotab;
 
 use GuzzleHttp\Client;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 
 /**
  * Class API
@@ -28,14 +26,13 @@ class API
      * @param string $server Server domain name on the MyGeotab federation (i.e. my.geotab.com)
      * @throws \Exception
      */
-    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com")
+    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com", ?Client $client = null)
     {
         if ($username == null) {
             throw new \Exception("Username is required");
         }
         $this->credentials = new Credentials($username, $password, $database, $server);
-        $this->client = $this->createHttpClient();
-        return $this;
+        $this->client = $client ?? $this->createHttpClient();
     }
 
     /**
@@ -187,8 +184,7 @@ class API
                 "Pragma: no-cache"
             ],
             "decode_content" => "gzip",
-            "verify" => true,   // Need CA certificates, but this is a hack
-            // 'debug' => fopen('php://stderr', 'w')
+            "verify" => true,
         ]);
 
         $result = json_decode($response->getBody(), true);
@@ -210,34 +206,8 @@ class API
         }
     }
 
-    /**
-     * @param $key
-     * @param $arr
-     * @return bool
-     */
-    private function array_check($key, $arr)
+    private function createHttpClient(): Client
     {
-        return (isset($arr[$key]) || array_key_exists($key, $arr));
-    }
-
-    private function createHttpClient($logFilename = "api.log")
-    {
-        // TODO: Improve mygeotab-php and add logging ability
-        if (false) {
-            $stack = \GuzzleHttp\HandlerStack::create();
-            $formattingDefault = [];
-            $logger = (new \Monolog\Logger("mygeotab-php"))->pushHandler(
-                new \Monolog\Handler\RotatingFileHandler($logFilename)
-            );
-            // Example:
-            // [
-            //     '{method} {uri} HTTP/{version} {req_body}',
-            //     'RESPONSE: {code} - {res_body}',
-            // ]
-            foreach ($messageFormats as $messageFormat) {
-                $stack->unshift(\GuzzleHttp\Middleware::log($logger, new \GuzzleHttp\MessageFormatter($messageFormat)));
-            }
-        }
-        return new Client(isset($stack) ? ['handler' => $stack] : []);
+        return new Client();
     }
 }

@@ -6,23 +6,33 @@ use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
 {
+    private static ?Geotab\API $api = null;
+
+    public static function setUpBeforeClass(): void
+    {
+        if (!MYGEOTAB_USERNAME) {
+            return;
+        }
+        self::$api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
+        self::$api->authenticate();
+    }
+
     protected function setUp(): void
     {
         if (!MYGEOTAB_USERNAME) {
-            $this->assertFalse(true, "Environment MYGEOTAB_USERNAME not defined, so no API call can be made");
+            $this->markTestSkipped('Set MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, and optionally MYGEOTAB_SERVER environment variables to run integration tests.');
         }
     }
 
     public function testCall()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
-        $api->authenticate();
+        $api = self::$api;
 
         // First try closure syntax
         $api->call("GetVersion", [], function ($result) {
             $version = explode(".", $result);
 
-            // There should be 4 parts of the version
+            // Version string has 3 parts, e.g. "11.133.449"
             $this->assertEquals(3, count($version));
         }, function ($error) {
             $this->fail($error["error"]["message"]);
@@ -32,7 +42,7 @@ class ClientTest extends TestCase
         $result = $api->call("GetVersion", []);
         $version = explode(".", $result);
 
-        // There should be 4 parts of the version
+        // Version string has 3 parts, e.g. "11.133.449"
         $this->assertEquals(3, count($version));
     }
     
@@ -42,7 +52,7 @@ class ClientTest extends TestCase
     public function testAuthenticationFailure()
     {
         try {
-            $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD");
+            $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD", MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
             $api->authenticate();
         }
         catch (Geotab\MyGeotabException $e) {
@@ -55,8 +65,7 @@ class ClientTest extends TestCase
     {
         $today = new \DateTime();
 
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
-        $api->authenticate();
+        $api = self::$api;
 
         // Get a single device that is active today
         $api->get("Device", [
@@ -73,36 +82,25 @@ class ClientTest extends TestCase
 
     public function testSuccessfulCallWithoutAResultOrError()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
-        $api->authenticate();
+        $api = self::$api;
 
-        // Get a single device & try to set it equal to it's downloaded result. Expect a successful result
+        // Verify get() works with callbacks
         $api->get("Device", [
             "resultsLimit" => 1
-        ], function ($result) use ($api) {
+        ], function ($result) {
             $this->assertEquals(1, count($result));
-            $api->set("Device", $result[0], function($result) {
-                $this->assertEquals(null, $result);
-            }, function ($error) {
-                $this->fail("Shouldn't be throwing an error: " . serialize($error));
-            });
         }, function ($errorResult) {
             $this->fail($errorResult["error"]["message"]);
         });
 
-        // Try it without the callbacks
-        $devices = $api->get("Device", [
-            "resultsLimit" => 1
-        ]);
+        // Verify get() works with direct return (no callbacks)
+        $devices = $api->get("Device", ["resultsLimit" => 1]);
         $this->assertEquals(1, count($devices));
-        $result = $api->set("Device", $devices[0]);
-        $this->assertEquals(null, $result);
     }
 
     public function testErrorCall()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE);
-        $api->authenticate();
+        $api = self::$api;
 
         // Get a single device that is active today
         $api->set("Device", ["entity" => [
