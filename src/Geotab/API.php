@@ -173,15 +173,10 @@ class API
     private function request($method, array $post, $successCallback, $errorCallback)
     {
         $response = $this->client->request("POST", $this->resolveApiUri($this->credentials->getServer()), [
-            "form_params" => [
-                "JSON-RPC" => json_encode(["method" => $method, "params" => $post])
-            ],
+            "json" => ["method" => $method, "params" => $post],
             "headers" => [
-                "User-Agent" => "mygeotab-php/1.2.0",
-                "Content-Type: application/json",
-                "Charset=UTF-8",
-                "Cache-Control: no-cache",
-                "Pragma: no-cache"
+                "User-Agent" => "mygeotab-php/2.1.0",
+                "Accept"     => "application/json",
             ],
             "decode_content" => "gzip",
             "verify" => true,
