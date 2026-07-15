@@ -42,7 +42,7 @@ class ClientTest extends TestCase
     public function testAuthenticationFailure()
     {
         try {
-            $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD");
+            $api = new Geotab\API(MYGEOTAB_USERNAME . "INCORRECTUSERNAME", MYGEOTAB_PASSWORD . "INCORRECTPWD", MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
             $api->authenticate();
         }
         catch (Geotab\MyGeotabException $e) {

@@ -42,7 +42,7 @@ jobs:
           echo "MYGEOTAB_SERVER set: ${{ secrets.MYGEOTAB_SERVER != '' }}"
 
       - name: Run integration tests
-        run: vendor/bin/phpunit --testsuite integration --configuration phpunit.xml.dist
+        run: vendor/bin/phpunit --testsuite integration --configuration phpunit.xml.dist --verbose
         env:
           MYGEOTAB_USERNAME: ${{ secrets.MYGEOTAB_USERNAME }}
           MYGEOTAB_PASSWORD: ${{ secrets.MYGEOTAB_PASSWORD }}
