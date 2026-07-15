@@ -6,6 +6,17 @@ use PHPUnit\Framework\TestCase;
 
 class ClientTest extends TestCase
 {
+    private static ?Geotab\API $api = null;
+
+    public static function setUpBeforeClass(): void
+    {
+        if (!MYGEOTAB_USERNAME) {
+            return;
+        }
+        self::$api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
+        self::$api->authenticate();
+    }
+
     protected function setUp(): void
     {
         if (!MYGEOTAB_USERNAME) {
@@ -15,8 +26,7 @@ class ClientTest extends TestCase
 
     public function testCall()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
-        $api->authenticate();
+        $api = self::$api;
 
         // First try closure syntax
         $api->call("GetVersion", [], function ($result) {
@@ -55,8 +65,7 @@ class ClientTest extends TestCase
     {
         $today = new \DateTime();
 
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
-        $api->authenticate();
+        $api = self::$api;
 
         // Get a single device that is active today
         $api->get("Device", [
@@ -73,8 +82,7 @@ class ClientTest extends TestCase
 
     public function testSuccessfulCallWithoutAResultOrError()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
-        $api->authenticate();
+        $api = self::$api;
 
         // Get a single device & try to set it equal to it's downloaded result. Expect a successful result
         $api->get("Device", [
@@ -101,8 +109,7 @@ class ClientTest extends TestCase
 
     public function testErrorCall()
     {
-        $api = new Geotab\API(MYGEOTAB_USERNAME, MYGEOTAB_PASSWORD, MYGEOTAB_DATABASE, MYGEOTAB_SERVER);
-        $api->authenticate();
+        $api = self::$api;
 
         // Get a single device that is active today
         $api->set("Device", ["entity" => [
