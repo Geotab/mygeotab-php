@@ -178,7 +178,7 @@ class API
                 "User-Agent" => "mygeotab-php/" . (\Composer\InstalledVersions::getPrettyVersion('geotab/mygeotab-php') ?? 'dev'),
                 "Accept"     => "application/json",
             ],
-                "decode_content" => true,
+            "decode_content" => true,
             "verify" => true,
         ]);
 
