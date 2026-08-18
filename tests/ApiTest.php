@@ -4,9 +4,11 @@ namespace Geotab\Tests;
 use Geotab\API;
 use Geotab\Credentials;
 use Geotab\MyGeotabException;
+use Composer\InstalledVersions;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
@@ -70,6 +72,55 @@ class ApiTest extends TestCase
         $client = $this->makeClient([$this->mockSuccess('11.133.449')]);
         $api    = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com', $client);
         $this->assertSame('11.133.449', $api->call('GetVersion', []));
+    }
+
+    // -------------------------------------------------------------------------
+    // User-Agent
+    // -------------------------------------------------------------------------
+
+    public function testUserAgentHeaderIsSent(): void
+    {
+        $container = [];
+        $stack     = HandlerStack::create(new MockHandler([$this->mockSuccess('11.133.449')]));
+        $stack->push(Middleware::history($container));
+
+        $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
+            new Client(['handler' => $stack]));
+        $api->call('GetVersion', []);
+
+        $userAgent = $container[0]['request']->getHeaderLine('User-Agent');
+        $this->assertStringStartsWith('mygeotab-php/', $userAgent);
+    }
+
+    public function testUserAgentVersionMatchesInstalledPackage(): void
+    {
+        $container = [];
+        $stack     = HandlerStack::create(new MockHandler([$this->mockSuccess('11.133.449')]));
+        $stack->push(Middleware::history($container));
+
+        $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
+            new Client(['handler' => $stack]));
+        $api->call('GetVersion', []);
+
+        $userAgent       = $container[0]['request']->getHeaderLine('User-Agent');
+        $expectedVersion = InstalledVersions::getPrettyVersion('geotab/mygeotab-php') ?? 'dev';
+        $this->assertSame("mygeotab-php/{$expectedVersion}", $userAgent);
+    }
+
+    public function testUserAgentVersionIsTagOrDev(): void
+    {
+        $container = [];
+        $stack     = HandlerStack::create(new MockHandler([$this->mockSuccess('11.133.449')]));
+        $stack->push(Middleware::history($container));
+
+        $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
+            new Client(['handler' => $stack]));
+        $api->call('GetVersion', []);
+
+        $version = substr($container[0]['request']->getHeaderLine('User-Agent'), strlen('mygeotab-php/'));
+
+        // On a tagged release: "3.0.0". In development: "dev-main" or "dev".
+        $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$|^dev/', $version);
     }
 
     // -------------------------------------------------------------------------
