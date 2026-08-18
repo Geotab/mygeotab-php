@@ -175,10 +175,10 @@ class API
         $response = $this->client->request("POST", $this->resolveApiUri($this->credentials->getServer()), [
             "json" => ["method" => $method, "params" => $post],
             "headers" => [
-                "User-Agent" => "mygeotab-php/2.1.1",
+                "User-Agent" => "mygeotab-php/3.0.0",
                 "Accept"     => "application/json",
             ],
-            "decode_content" => "gzip",
+                "decode_content" => true,
             "verify" => true,
         ]);
 

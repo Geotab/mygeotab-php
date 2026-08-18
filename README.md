@@ -10,6 +10,7 @@ PHP client for the [MyGeotab](https://www.geotab.com) API.
 ## Requirements
 
 - PHP **>=8.1**
+- guzzlehttp/guzzle **^8.0**
 - [Composer](https://getcomposer.org/)
 
 ## Installation
