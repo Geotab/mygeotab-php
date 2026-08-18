@@ -175,7 +175,7 @@ class API
         $response = $this->client->request("POST", $this->resolveApiUri($this->credentials->getServer()), [
             "json" => ["method" => $method, "params" => $post],
             "headers" => [
-                "User-Agent" => "mygeotab-php/3.0.0",
+                "User-Agent" => "mygeotab-php/" . (\Composer\InstalledVersions::getPrettyVersion('geotab/mygeotab-php') ?? 'dev'),
                 "Accept"     => "application/json",
             ],
                 "decode_content" => true,
