@@ -12,19 +12,6 @@ PHP client for the [MyGeotab](https://www.geotab.com) API.
 - PHP **>=8.2**
 - [Composer](https://getcomposer.org/)
 
-## Security
-
-Use a PHP release patched for CVE-2026-109618 and CVE-2026-109619:
-**8.2.35+**, **8.3.36+**, **8.4.27+**, or **8.5.12+** within those minor versions.
-PHP 8.1 is end-of-life, unsupported, and has no upstream fix. See the
-[first advisory](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w)
-and [second advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp).
-
-The example commands below disable upload progress and file uploads and limit POST
-bodies. These settings do not replace upgrading PHP. On PHP 8.5, if you cannot
-upgrade yet, also set `fatal_error_backtraces=0`. PHP's built-in server (`php -S`) is for
-local development only; never expose it beyond localhost.
-
 ## Installation
 
 ```bash
@@ -86,6 +73,19 @@ $api->get(
     function ($error)   { var_dump($error); }
 );
 ```
+
+## Security
+
+Use a PHP release patched for CVE-2026-109618 and CVE-2026-109619:
+**8.2.35+**, **8.3.36+**, **8.4.27+**, or **8.5.12+** within those minor versions.
+PHP 8.1 is end-of-life, unsupported, and has no upstream fix. See the
+[first advisory](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w)
+and [second advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp).
+
+The example commands below disable upload progress and file uploads and limit POST
+bodies. These settings do not replace upgrading PHP. On PHP 8.5, if you cannot
+upgrade yet, also set `fatal_error_backtraces=0`. PHP's built-in server (`php -S`) is for
+local development only; never expose it beyond localhost.
 
 ## Logging
 
