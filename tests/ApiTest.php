@@ -75,6 +75,107 @@ class ApiTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Debug output and sensitive arguments
+    // -------------------------------------------------------------------------
+
+    public function testCredentialsDebugOutputRedactsSecrets(): void
+    {
+        $credentials = new Credentials('user@example.com', null, 'DemoDatabase', 'my.geotab.com');
+        $credentials->setPassword('debug-password-secret');
+        $credentials->setSessionId('debug-session-secret');
+
+        foreach (['print_r', 'var_dump'] as $dump) {
+            ob_start();
+            try {
+                $dump($credentials);
+                $output = ob_get_contents();
+            } finally {
+                ob_end_clean();
+            }
+            $this->assertStringNotContainsString('debug-password-secret', $output);
+            $this->assertStringNotContainsString('debug-session-secret', $output);
+            $this->assertStringContainsString('********', $output);
+            $this->assertStringContainsString('DemoDatabase', $output);
+        }
+        $this->assertSame('debug-password-secret', $credentials->getPassword());
+        $this->assertSame('debug-session-secret', $credentials->getSessionId());
+    }
+
+    public function testApiDebugOutputRedactsSecretsAndClientInternals(): void
+    {
+        $api = new API('user@example.com', 'debug-password-secret', 'DemoDatabase', 'my.geotab.com',
+            new Client(['headers' => ['Authorization' => 'client-authorization-secret']]));
+        $api->getCredentials()->setSessionId('debug-session-secret');
+
+        foreach (['print_r', 'var_dump'] as $dump) {
+            ob_start();
+            try {
+                $dump($api);
+                $output = ob_get_contents();
+            } finally {
+                ob_end_clean();
+            }
+            $this->assertStringNotContainsString('debug-password-secret', $output);
+            $this->assertStringNotContainsString('debug-session-secret', $output);
+            $this->assertStringNotContainsString('client-authorization-secret', $output);
+            $this->assertStringContainsString('********', $output);
+            $this->assertStringContainsString(Client::class, $output);
+        }
+    }
+
+    public function testDebugInfoPreservesUnsetCredentials(): void
+    {
+        $credentials = new Credentials('user@example.com', null, 'DemoDatabase', 'my.geotab.com');
+        $this->assertNull($credentials->__debugInfo()['password']);
+        $this->assertNull($credentials->__debugInfo()['sessionId']);
+
+        $api = new API('user@example.com');
+        $api->setCredentials(null);
+        $this->assertNull($api->__debugInfo()['credentials']);
+    }
+
+    public function testSecretParametersHaveSensitiveParameterAttribute(): void
+    {
+        foreach ([
+            [API::class, '__construct', 'password'],
+            [Credentials::class, '__construct', 'password'],
+            [Credentials::class, 'setPassword', 'password'],
+            [Credentials::class, 'setSessionId', 'sessionId'],
+        ] as [$class, $method, $parameter]) {
+            $reflection = new \ReflectionParameter([$class, $method], $parameter);
+            $this->assertCount(1, $reflection->getAttributes(\SensitiveParameter::class),
+                "$class::$method($parameter)");
+        }
+    }
+
+    public function testDebugInfoHandlesEmptyAndZeroSecrets(): void
+    {
+        $credentials = new Credentials('user@example.com', null, 'DemoDatabase', 'my.geotab.com');
+        foreach (['', '0'] as $secret) {
+            $expected = $secret === '' ? '' : '********';
+            $credentials->setPassword($secret);
+            $credentials->setSessionId($secret);
+            $this->assertSame($expected, $credentials->__debugInfo()['password']);
+            $this->assertSame($expected, $credentials->__debugInfo()['sessionId']);
+        }
+    }
+
+    public function testConstructorExceptionTraceRedactsPassword(): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        try {
+            new API(null, 'trace-password-secret');
+            $this->fail('Expected constructor to reject a null username');
+        } catch (\Exception $error) {
+            $arguments = $error->getTrace()[0]['args'];
+            $this->assertInstanceOf(\SensitiveParameterValue::class, $arguments[1]);
+            $this->assertStringNotContainsString('trace-password-secret', print_r($error->getTrace(), true));
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous);
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // User-Agent
     // -------------------------------------------------------------------------
 
