@@ -47,11 +47,14 @@ examples/
 
 ```bash
 # Top speeding violations
-php -S localhost:7000 -t examples/top-speeding-violations/web
+php -d session.upload_progress.enabled=0 -d file_uploads=0 -d post_max_size=16K -S localhost:7000 -t examples/top-speeding-violations/web
 
 # Live GPS feed (polls GetFeed every 5 s)
-php -S localhost:7001 -t examples/gps-feed/web
+php -d session.upload_progress.enabled=0 -d file_uploads=0 -d post_max_size=16K -S localhost:7001 -t examples/gps-feed/web
 ```
+
+Use patched PHP (8.2.35+, 8.3.36+, 8.4.27+, or 8.5.12+ within those minor versions).
+`php -S` is for local development only; never expose it beyond localhost.
 
 ## Core API usage
 
