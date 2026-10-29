@@ -117,7 +117,7 @@ $database      = $authenticated ? ($_SESSION['credentials']['database'] ?? '') :
         <form method="post">
             <div class="form-field">
                 <label class="zen-body-s-700 field-label" for="f-username">Username</label>
-                <input id="f-username" class="zen-text-input field-input" type="email"
+                <input id="f-username" class="zen-text-input field-input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"
                        name="username" placeholder="user@example.com"
                        value="<?= htmlspecialchars($post('username')) ?>" required>
             </div>
