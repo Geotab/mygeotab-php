@@ -1,6 +1,6 @@
 # mygeotab-php — Agent Context
 
-PHP client for the MyGeotab API. Package: `geotab/mygeotab-php` | PHP ≥ 8.1 | MIT
+PHP client for the MyGeotab API. Package: `geotab/mygeotab-php` | PHP ≥ 8.2 | MIT
 
 ## Setup
 
