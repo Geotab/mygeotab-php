@@ -448,6 +448,8 @@ class ApiTest extends TestCase
             $called = true;
             $this->assertStringStartsWith('Invalid API response', $error['error']['message']);
             $this->assertStringNotContainsString('private response', $error['error']['message']);
+            $this->assertSame('InvalidResponseException', $error['error']['data']['type']);
+            $this->assertStringContainsString('[InvalidResponseException]', (string)new MyGeotabException($error));
         });
         $this->assertTrue($called);
         $this->assertNull($result);
@@ -456,18 +458,29 @@ class ApiTest extends TestCase
     public static function malformedMessages(): array
     {
         return [[[]], [['message' => null]], [['message' => 42]],
-            [['message' => ['unexpected']]], [['message' => false]]];
+            [['message' => ['unexpected']]], [['message' => false]],
+            [null], ['str'], [42], [false],
+            [['data' => 'str']], [['data' => ['type' => ['unexpected']]]]];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('malformedMessages')]
-    public function testMalformedErrorMessageDoesNotTypeError(array $error): void
+    public function testMalformedErrorMessageDoesNotTypeError(mixed $error): void
     {
         $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
             $this->makeClient([new Response(200, [], json_encode(['error' => $error]))]));
 
-        $this->expectException(MyGeotabException::class);
-        $this->expectExceptionMessage('MyGeotab API error');
-        $api->call('GetVersion', []);
+        set_error_handler(function (int $severity, string $message, string $file, int $line): never {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
+        });
+        try {
+            $api->call('GetVersion', []);
+            $this->fail('Expected MyGeotabException');
+        } catch (MyGeotabException $e) {
+            $this->assertSame('MyGeotab API error', $e->getMessage());
+            $this->assertSame("Geotab\\MyGeotabException: [Unknown]: MyGeotab API error\n", (string)$e);
+        } finally {
+            restore_error_handler();
+        }
     }
 
     public static function redirectStatuses(): array
@@ -493,6 +506,8 @@ class ApiTest extends TestCase
             $this->fail('Expected redirect response to be rejected');
         } catch (MyGeotabException $e) {
             $this->assertStringContainsString('redirect', $e->getMessage());
+            $this->assertSame('InvalidResponseException', $e->error['data']['type']);
+            $this->assertStringContainsString('[InvalidResponseException]', (string)$e);
         }
         $this->assertCount(1, $history);
         $this->assertCount(1, $mock);
@@ -504,14 +519,23 @@ class ApiTest extends TestCase
         $stack = HandlerStack::create(new MockHandler([$this->mockSuccess('version')]));
         $stack->push(Middleware::history($history));
         $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
-            new Client(['handler' => $stack]));
+            new Client(['handler' => $stack, 'timeout' => 7, 'connect_timeout' => 3]));
         $api->call('GetVersion', []);
 
         $options = $history[0]['options'];
         $this->assertFalse($options['allow_redirects']);
-        $this->assertSame(30, $options['timeout']);
-        $this->assertSame(10, $options['connect_timeout']);
+        $this->assertSame(7, $options['timeout']);
+        $this->assertSame(3, $options['connect_timeout']);
         $this->assertTrue($options['verify']);
+    }
+
+    public function testDefaultClientTimeouts(): void
+    {
+        $api = new API('user@example.com', 'password', 'DemoDatabase');
+        $client = (new \ReflectionProperty(API::class, 'client'))->getValue($api);
+
+        $this->assertSame(30, $client->getConfig('timeout'));
+        $this->assertSame(10, $client->getConfig('connect_timeout'));
     }
 
     public function testErrorCallbackInvokedOnFailure(): void

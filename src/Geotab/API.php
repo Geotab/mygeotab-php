@@ -181,20 +181,21 @@ class API
             "decode_content" => true,
             "verify" => true,
             "allow_redirects" => false,
-            "timeout" => 30,
-            "connect_timeout" => 10,
         ]);
 
         try {
             $result = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
         } catch (\JsonException $e) {
-            $result = ["error" => ["message" => "Invalid API response: expected valid JSON"]];
+            $result = ["error" => ["message" => "Invalid API response: expected valid JSON",
+                "data" => ["type" => "InvalidResponseException"]]];
         }
         if (!is_array($result)) {
-            $result = ["error" => ["message" => "Invalid API response: expected a JSON object or array"]];
+            $result = ["error" => ["message" => "Invalid API response: expected a JSON object or array",
+                "data" => ["type" => "InvalidResponseException"]]];
         }
         if ($response->getStatusCode() >= 300 && $response->getStatusCode() < 400) {
-            $result = ["error" => ["message" => "Unexpected HTTP redirect from API"]];
+            $result = ["error" => ["message" => "Unexpected HTTP redirect from API",
+                "data" => ["type" => "InvalidResponseException"]]];
         }
 
         // If callbacks are specified - then call them. Otherwise, just return the results or throw an error
@@ -216,6 +217,9 @@ class API
 
     private function createHttpClient(): Client
     {
-        return new Client();
+        return new Client([
+            "timeout" => 30,
+            "connect_timeout" => 10,
+        ]);
     }
 }
