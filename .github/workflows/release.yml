@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.2', '8.3', '8.4']
+        php-version: ['8.2', '8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout
@@ -23,6 +23,10 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           coverage: none
+
+      - name: Require patched PHP
+        run: |
+          php -r '$minimums = ["8.2" => "8.2.35", "8.3" => "8.3.36", "8.4" => "8.4.27", "8.5" => "8.5.12"]; $minor = PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION; echo "PHP " . PHP_VERSION . PHP_EOL; exit(isset($minimums[$minor]) && version_compare(PHP_VERSION, $minimums[$minor], ">=") ? 0 : 1);'
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress

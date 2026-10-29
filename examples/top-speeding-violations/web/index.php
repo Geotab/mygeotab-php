@@ -6,17 +6,23 @@ use Geotab\MyGeotabException;
 $deviceExceptionCount = [];
 $deviceNames = [];
 $error = null;
+$post = fn(string $k, string $d = '') => is_string($_POST[$k] ?? null) ? $_POST[$k] : $d;
+$submitted = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
+$server = $post('server') ?: 'my.geotab.com';
+if ($submitted && !preg_match('/^([a-z0-9-]+\.)*geotab\.com$/iD', $server)) {
+    $error = 'Server must be a geotab.com hostname.';
+}
 
-if (isset($_POST['submit'])) {
+if ($submitted && $error === null) {
     try {
         $lastWeek = new DateTime();
         $lastWeek->modify('-1 week');
 
         $api = new Geotab\API(
-            $_POST['username'],
-            $_POST['password'],
-            $_POST['database'],
-            $_POST['server'] ?: 'my.geotab.com'
+            $post('username'),
+            $post('password'),
+            $post('database'),
+            $server
         );
         $api->authenticate();
 
@@ -31,8 +37,8 @@ if (isset($_POST['submit'])) {
         $deviceNames = GeotabPHP\ExceptionCalculator::GetDeviceNames($api, array_keys($deviceExceptionCount));
     } catch (MyGeotabException $e) {
         $error = $e->getMessage();
-    } catch (\Exception $e) {
-        $error = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error = 'Unable to retrieve speeding violations. Please try again.';
     }
 }
 
@@ -63,9 +69,9 @@ $hasResults = count($deviceExceptionCount) > 0;
             <form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="post">
                 <div class="form-field">
                     <label class="zen-body-s-700 field-label" for="f-username">Username</label>
-                    <input id="f-username" class="zen-text-input field-input" type="email"
+                    <input id="f-username" class="zen-text-input field-input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"
                            name="username" placeholder="user@example.com"
-                           value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+                           value="<?= htmlspecialchars($post('username')) ?>" required>
                 </div>
 
                 <div class="form-field">
@@ -79,13 +85,13 @@ $hasResults = count($deviceExceptionCount) > 0;
                         <label class="zen-body-s-700 field-label" for="f-database">Database</label>
                         <input id="f-database" class="zen-text-input field-input" type="text"
                                name="database" placeholder="DatabaseName"
-                               value="<?= htmlspecialchars($_POST['database'] ?? '') ?>" required>
+                               value="<?= htmlspecialchars($post('database')) ?>" required>
                     </div>
                     <div class="form-field">
                         <label class="zen-body-s-700 field-label" for="f-server">Server</label>
                         <input id="f-server" class="zen-text-input field-input" type="text"
                                name="server"
-                               value="<?= htmlspecialchars($_POST['server'] ?? 'my.geotab.com') ?>">
+                               value="<?= htmlspecialchars($post('server', 'my.geotab.com')) ?>">
                     </div>
                 </div>
 
@@ -136,7 +142,7 @@ $hasResults = count($deviceExceptionCount) > 0;
             </div>
         </div>
 
-        <?php elseif (isset($_POST['submit']) && !$error): ?>
+        <?php elseif ($submitted && !$error): ?>
         <div class="zen-card-container zen-card-shadow empty-state">
             <p class="zen-body-m-400-short" style="color:var(--text-secondary);margin:0">
                 No speeding exceptions found in the last 7 days.

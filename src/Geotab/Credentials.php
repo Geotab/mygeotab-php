@@ -9,12 +9,23 @@ class Credentials
     private $database;
     private $server;
 
-    public function __construct($username, $password, $database, $server)
+    public function __construct($username, #[\SensitiveParameter] $password, $database, $server)
     {
         $this->username = $username;
         $this->password = $password;
         $this->database = $database;
         $this->server = $server;
+    }
+
+    public function __debugInfo(): array
+    {
+        return [
+            'username' => $this->username,
+            'password' => $this->password === null || $this->password === '' ? $this->password : '********',
+            'sessionId' => $this->sessionId === null || $this->sessionId === '' ? $this->sessionId : '********',
+            'database' => $this->database,
+            'server' => $this->server,
+        ];
     }
 
     /**
@@ -44,7 +55,7 @@ class Credentials
     /**
      * @param mixed $password
      */
-    public function setPassword($password)
+    public function setPassword(#[\SensitiveParameter] $password)
     {
         $this->password = $password;
     }
@@ -60,7 +71,7 @@ class Credentials
     /**
      * @param mixed $sessionId
      */
-    public function setSessionId($sessionId)
+    public function setSessionId(#[\SensitiveParameter] $sessionId)
     {
         $this->sessionId = $sessionId;
     }

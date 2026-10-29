@@ -9,7 +9,7 @@ PHP client for the [MyGeotab](https://www.geotab.com) API.
 
 ## Requirements
 
-- PHP **>=8.1**
+- PHP **>=8.2**
 - [Composer](https://getcomposer.org/)
 
 ## Installation
@@ -73,6 +73,19 @@ $api->get(
     function ($error)   { var_dump($error); }
 );
 ```
+
+## Security
+
+Use a PHP release patched for CVE-2026-109618 and CVE-2026-109619:
+**8.2.35+**, **8.3.36+**, **8.4.27+**, or **8.5.12+** within those minor versions.
+PHP 8.1 is end-of-life, unsupported, and has no upstream fix. See the
+[first advisory](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w)
+and [second advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp).
+
+The example commands below disable upload progress and file uploads and limit POST
+bodies. These settings do not replace upgrading PHP. On PHP 8.5, if you cannot
+upgrade yet, also set `fatal_error_backtraces=0`. PHP's built-in server (`php -S`) is for
+local development only; never expose it beyond localhost.
 
 ## Logging
 
@@ -138,10 +151,18 @@ php examples/cli-sample.php
 **Top Speeding Violations** — a web UI example. Serve with PHP's built-in server:
 
 ```bash
-php -S localhost:7000 -t examples/top-speeding-violations/web
+php -d session.upload_progress.enabled=0 -d file_uploads=0 -d post_max_size=16K -S localhost:7000 -t examples/top-speeding-violations/web
 ```
 
 Then open `http://localhost:7000` in your browser.
+
+**Live GPS Feed** — polls GetFeed for vehicle GPS positions every five seconds:
+
+```bash
+php -d session.upload_progress.enabled=0 -d file_uploads=0 -d post_max_size=16K -S localhost:7001 -t examples/gps-feed/web
+```
+
+Then open `http://localhost:7001` in your browser.
 
 ## Contributing
 

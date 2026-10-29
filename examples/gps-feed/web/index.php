@@ -6,14 +6,25 @@
  * from all vehicles in a database, polling every 5 seconds.
  *
  * Run:
- *   php -S localhost:7001 -t examples/gps-feed/web
+ *   php -d session.upload_progress.enabled=0 -d file_uploads=0 -d post_max_size=16K -S localhost:7001 -t examples/gps-feed/web
  */
-session_start();
 require __DIR__ . '/../../../vendor/autoload.php';
+session_start([
+    'cookie_httponly' => true,
+    'cookie_samesite' => 'Strict',
+    'cookie_secure' => !empty($_SERVER['HTTPS']),
+    'use_strict_mode' => true,
+]);
 
 use Geotab\MyGeotabException;
 
 $error = null;
+$post = fn(string $k, string $d = '') => is_string($_POST[$k] ?? null) ? $_POST[$k] : $d;
+$submitted = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST';
+$server = $post('server') ?: 'my.geotab.com';
+if ($submitted && !preg_match('/^([a-z0-9-]+\.)*geotab\.com$/iD', $server)) {
+    $error = 'Server must be a geotab.com hostname.';
+}
 
 // ── Logout ────────────────────────────────────────────────────────
 if (isset($_GET['logout'])) {
@@ -23,15 +34,16 @@ if (isset($_GET['logout'])) {
 }
 
 // ── Login form submitted ──────────────────────────────────────────
-if (isset($_POST['submit'])) {
+if ($submitted && $error === null) {
     try {
         $api = new Geotab\API(
-            $_POST['username'],
-            $_POST['password'],
-            $_POST['database'],
-            $_POST['server'] ?: 'my.geotab.com'
+            $post('username'),
+            $post('password'),
+            $post('database'),
+            $server
         );
         $api->authenticate();
+        session_regenerate_id(true);
 
         $cred = $api->getCredentials();
         $_SESSION['credentials'] = [
@@ -60,8 +72,8 @@ if (isset($_POST['submit'])) {
 
     } catch (MyGeotabException $e) {
         $error = $e->getMessage();
-    } catch (\Exception $e) {
-        $error = $e->getMessage();
+    } catch (\Throwable $e) {
+        $error = 'Unable to connect to MyGeotab. Please try again.';
     }
 }
 
@@ -105,9 +117,9 @@ $database      = $authenticated ? ($_SESSION['credentials']['database'] ?? '') :
         <form method="post">
             <div class="form-field">
                 <label class="zen-body-s-700 field-label" for="f-username">Username</label>
-                <input id="f-username" class="zen-text-input field-input" type="email"
+                <input id="f-username" class="zen-text-input field-input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"
                        name="username" placeholder="user@example.com"
-                       value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+                       value="<?= htmlspecialchars($post('username')) ?>" required>
             </div>
 
             <div class="form-field">
@@ -121,13 +133,13 @@ $database      = $authenticated ? ($_SESSION['credentials']['database'] ?? '') :
                     <label class="zen-body-s-700 field-label" for="f-database">Database</label>
                     <input id="f-database" class="zen-text-input field-input" type="text"
                            name="database" placeholder="DatabaseName"
-                           value="<?= htmlspecialchars($_POST['database'] ?? '') ?>" required>
+                           value="<?= htmlspecialchars($post('database')) ?>" required>
                 </div>
                 <div class="form-field">
                     <label class="zen-body-s-700 field-label" for="f-server">Server</label>
                     <input id="f-server" class="zen-text-input field-input" type="text"
                            name="server"
-                           value="<?= htmlspecialchars($_POST['server'] ?? 'my.geotab.com') ?>">
+                           value="<?= htmlspecialchars($post('server', 'my.geotab.com')) ?>">
                 </div>
             </div>
 
@@ -243,14 +255,28 @@ $database      = $authenticated ? ($_SESSION['credentials']['database'] ?? '') :
 
                     const tr = document.createElement('tr');
                     tr.className = 'row-new';
-                    tr.innerHTML = `
-                        <td>${formatUtc(r.dateTime)}</td>
-                        <td>${deviceName(r.device?.id ?? '')}</td>
-                        <td style="font-variant-numeric:tabular-nums">${lat}</td>
-                        <td style="font-variant-numeric:tabular-nums">${lon}</td>
-                        <td><span class="speed-badge ${speedClass(kmh)}">${kmh} km/h</span></td>
-                        <td><a class="map-link" href="${mapUrl}" target="_blank" rel="noopener">Map ↗</a></td>
-                    `;
+                    [formatUtc(r.dateTime), deviceName(r.device?.id ?? ''), lat, lon].forEach((value, i) => {
+                        const td = document.createElement('td');
+                        td.textContent = value;
+                        if (i >= 2) td.style.fontVariantNumeric = 'tabular-nums';
+                        tr.appendChild(td);
+                    });
+                    const speedCell = document.createElement('td');
+                    const badge = document.createElement('span');
+                    badge.className = 'speed-badge ' + speedClass(kmh);
+                    badge.textContent = kmh + ' km/h';
+                    speedCell.appendChild(badge);
+                    tr.appendChild(speedCell);
+
+                    const mapCell = document.createElement('td');
+                    const link = document.createElement('a');
+                    link.className = 'map-link';
+                    link.href = mapUrl;
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                    link.textContent = 'Map ↗';
+                    mapCell.appendChild(link);
+                    tr.appendChild(mapCell);
                     tbody.insertBefore(tr, tbody.firstChild);
                 });
 

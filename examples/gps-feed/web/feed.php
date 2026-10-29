@@ -6,7 +6,13 @@
  * LogRecord, saves the returned toVersion back to the session, and
  * returns the new records as JSON.
  */
-session_start();
+require __DIR__ . '/../../../vendor/autoload.php';
+session_start([
+    'cookie_httponly' => true,
+    'cookie_samesite' => 'Strict',
+    'cookie_secure' => !empty($_SERVER['HTTPS']),
+    'use_strict_mode' => true,
+]);
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['credentials'])) {
@@ -15,11 +21,13 @@ if (!isset($_SESSION['credentials'])) {
     exit;
 }
 
-require __DIR__ . '/../../../vendor/autoload.php';
-
 $creds = $_SESSION['credentials'];
 
 try {
+    if (!is_string($creds['server'] ?? null)
+        || !preg_match('/^([a-z0-9-]+\.)*geotab\.com$/iD', $creds['server'])) {
+        throw new \InvalidArgumentException('Invalid server');
+    }
     // Re-use the existing session — no re-authentication needed.
     $api = new Geotab\API(
         $creds['username'],
@@ -46,7 +54,8 @@ try {
         'toVersion' => $result['toVersion'] ?? '',
     ]);
 
-} catch (\Exception $e) {
+} catch (\Throwable $e) {
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode(['error' => $e instanceof Geotab\MyGeotabException
+        ? $e->getMessage() : 'Unable to retrieve GPS data. Please try again.']);
 }

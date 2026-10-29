@@ -7,12 +7,16 @@ class MyGeotabException extends \Exception
 
     public function __construct($error)
     {
-        $this->error = $error["error"];
-        parent::__construct($this->error["message"]);
+        $this->error = is_array($error) ? ($error["error"] ?? null) : null;
+        $message = is_array($this->error) ? ($this->error["message"] ?? null) : null;
+        parent::__construct(is_string($message) ? $message : "MyGeotab API error");
     }
 
     public function __toString()
     {
-        return __CLASS__ . ": [{$this->error["data"]["type"]}]: {$this->message}\n";
+        $data = is_array($this->error) ? ($this->error["data"] ?? null) : null;
+        $type = is_array($data) ? ($data["type"] ?? null) : null;
+        $type = is_string($type) ? $type : "Unknown";
+        return __CLASS__ . ": [{$type}]: {$this->message}\n";
     }
 }

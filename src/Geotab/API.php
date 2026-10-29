@@ -26,13 +26,21 @@ class API
      * @param string $server Server domain name on the MyGeotab federation (i.e. my.geotab.com)
      * @throws \Exception
      */
-    public function __construct($username, $password = null, $database = null, $server = "my.geotab.com", ?Client $client = null)
+    public function __construct($username, #[\SensitiveParameter] $password = null, $database = null, $server = "my.geotab.com", ?Client $client = null)
     {
         if ($username == null) {
             throw new \Exception("Username is required");
         }
         $this->credentials = new Credentials($username, $password, $database, $server);
         $this->client = $client ?? $this->createHttpClient();
+    }
+
+    public function __debugInfo(): array
+    {
+        return [
+            'credentials' => $this->credentials?->__debugInfo(),
+            'client' => $this->client === null ? null : get_class($this->client),
+        ];
     }
 
     /**
@@ -180,9 +188,23 @@ class API
             ],
             "decode_content" => true,
             "verify" => true,
+            "allow_redirects" => false,
         ]);
 
-        $result = json_decode($response->getBody(), true);
+        try {
+            $result = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            $result = ["error" => ["message" => "Invalid API response: expected valid JSON",
+                "data" => ["type" => "InvalidResponseException"]]];
+        }
+        if (!is_array($result)) {
+            $result = ["error" => ["message" => "Invalid API response: expected a JSON object or array",
+                "data" => ["type" => "InvalidResponseException"]]];
+        }
+        if ($response->getStatusCode() >= 300 && $response->getStatusCode() < 400) {
+            $result = ["error" => ["message" => "Unexpected HTTP redirect from API",
+                "data" => ["type" => "InvalidResponseException"]]];
+        }
 
         // If callbacks are specified - then call them. Otherwise, just return the results or throw an error
         $isError = (isset($result["error"]) || array_key_exists("error", $result));
@@ -203,6 +225,9 @@ class API
 
     private function createHttpClient(): Client
     {
-        return new Client();
+        return new Client([
+            "timeout" => 30,
+            "connect_timeout" => 10,
+        ]);
     }
 }
