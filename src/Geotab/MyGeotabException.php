@@ -8,7 +8,8 @@ class MyGeotabException extends \Exception
     public function __construct($error)
     {
         $this->error = $error["error"];
-        parent::__construct($this->error["message"]);
+        $message = $this->error["message"] ?? null;
+        parent::__construct(is_string($message) ? $message : "MyGeotab API error");
     }
 
     public function __toString()

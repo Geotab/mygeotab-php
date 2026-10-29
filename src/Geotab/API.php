@@ -180,9 +180,22 @@ class API
             ],
             "decode_content" => true,
             "verify" => true,
+            "allow_redirects" => false,
+            "timeout" => 30,
+            "connect_timeout" => 10,
         ]);
 
-        $result = json_decode($response->getBody(), true);
+        try {
+            $result = json_decode((string)$response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            $result = ["error" => ["message" => "Invalid API response: expected valid JSON"]];
+        }
+        if (!is_array($result)) {
+            $result = ["error" => ["message" => "Invalid API response: expected a JSON object or array"]];
+        }
+        if ($response->getStatusCode() >= 300 && $response->getStatusCode() < 400) {
+            $result = ["error" => ["message" => "Unexpected HTTP redirect from API"]];
+        }
 
         // If callbacks are specified - then call them. Otherwise, just return the results or throw an error
         $isError = (isset($result["error"]) || array_key_exists("error", $result));
