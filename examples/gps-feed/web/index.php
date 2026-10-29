@@ -6,7 +6,7 @@
  * from all vehicles in a database, polling every 5 seconds.
  *
  * Run:
- *   php -S localhost:7001 -t examples/gps-feed/web
+ *   php -d session.upload_progress.enabled=0 -d file_uploads=0 -d post_max_size=16K -S localhost:7001 -t examples/gps-feed/web
  */
 require __DIR__ . '/../../../vendor/autoload.php';
 session_start([

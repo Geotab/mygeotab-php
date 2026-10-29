@@ -21,8 +21,8 @@ PHP 8.1 is end-of-life, unsupported, and has no upstream fix. See the
 and [second advisory](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp).
 
 The example commands below disable upload progress and file uploads and limit POST
-bodies. These settings do not replace upgrading PHP. On PHP 8.5, also set
-`fatal_error_backtraces=0` until patched. PHP's built-in server (`php -S`) is for
+bodies. These settings do not replace upgrading PHP. On PHP 8.5, if you cannot
+upgrade yet, also set `fatal_error_backtraces=0`. PHP's built-in server (`php -S`) is for
 local development only; never expose it beyond localhost.
 
 ## Installation

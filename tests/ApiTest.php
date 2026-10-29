@@ -491,13 +491,11 @@ class ApiTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('redirectStatuses')]
     public function testHttpRedirectIsNotFollowed(int $status): void
     {
-        $history = [];
         $mock = new MockHandler([
             new Response($status, ['Location' => 'https://other.example/APIV1'], '{"result":"redirect"}'),
             $this->mockSuccess('must not be requested'),
         ]);
         $stack = HandlerStack::create($mock);
-        $stack->push(Middleware::history($history));
         $api = new API('user@example.com', 'password', 'DemoDatabase', 'my.geotab.com',
             new Client(['handler' => $stack]));
 
@@ -509,7 +507,6 @@ class ApiTest extends TestCase
             $this->assertSame('InvalidResponseException', $e->error['data']['type']);
             $this->assertStringContainsString('[InvalidResponseException]', (string)$e);
         }
-        $this->assertCount(1, $history);
         $this->assertCount(1, $mock);
     }
 
